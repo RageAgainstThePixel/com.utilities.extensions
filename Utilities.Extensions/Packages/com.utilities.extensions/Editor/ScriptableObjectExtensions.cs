@@ -102,7 +102,6 @@ namespace Utilities.Extensions.Editor
             }
 
             Debug.Assert(scriptableObject != null);
-
             return scriptableObject;
         }
 
@@ -161,5 +160,4 @@ namespace Utilities.Extensions.Editor
             return instances;
         }
     }
-
 }
