@@ -1,10 +1,10 @@
 {
-    "name": "ProjectScope.ProjectName.Tests",
-    "rootNamespace": "ProjectScope.ProjectName.Tests",
+    "name": "Utilities.Extensions.Tests",
+    "rootNamespace": "Utilities.Extensions.Tests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "ProjectScope.ProjectName"
+        "Utilities.Extensions"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,8 +1,12 @@
 {
-    "name": "ProjectScope.ProjectName",
-    "rootNamespace": "ProjectScope.ProjectName",
-    "references": [],
-    "includePlatforms": [],
+    "name": "Utilities.Extensions.Editor",
+    "rootNamespace": "Utilities.Extensions.Editor",
+    "references": [
+        "Utilities.Extensions"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

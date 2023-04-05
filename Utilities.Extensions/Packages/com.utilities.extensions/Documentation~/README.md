@@ -10,7 +10,7 @@ Common extensions for for the [Unity](https://unity.com/) Game Engine types.
 
 - Open your Unity project settings
 - Select the `Package Manager`
-![scoped-registries](Utilities.Extensions/Packages/com.utilities.extensions/Documentation~/images/package-manager-scopes.png)
+![scoped-registries](images/package-manager-scopes.png)
 - Add the OpenUPM package registry:
   - `Name: OpenUPM`
   - `URL: https://package.openupm.com`
