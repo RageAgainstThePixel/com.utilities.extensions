@@ -27,7 +27,7 @@ namespace Utilities.Extensions.Editor
         /// <param name="path">Optional path for the new asset.</param>
         /// <param name="ping">The new asset should be selected and opened in the inspector.</param>
         public static T CreateAsset<T>(this T scriptableObject, string path, bool ping = true) where T : ScriptableObject
-            => CreateAsset(scriptableObject, path, null, ping);
+            => CreateAsset(scriptableObject, path, null, ping, true);
 
         /// <summary>
         /// Creates, saves, and then opens a new asset for the target <see cref="ScriptableObject"/>.
@@ -37,9 +37,9 @@ namespace Utilities.Extensions.Editor
         /// <param name="fileName">Optional filename for the new asset.</param>
         /// <param name="ping">The new asset should be selected and opened in the inspector.</param>
         /// <param name="unique">Is the new asset unique, or can we make copies?</param>
-        public static T CreateAsset<T>(this T scriptableObject, string path, string fileName, bool ping, bool unique = true) where T : ScriptableObject
+        public static T CreateAsset<T>(this T scriptableObject, string path, string fileName, bool ping, bool unique) where T : ScriptableObject
         {
-            const string asset = ".asset";
+            const string assetExt = ".asset";
             const string resources = "Resources";
 
             var name = string.IsNullOrEmpty(fileName)
@@ -49,10 +49,18 @@ namespace Utilities.Extensions.Editor
 
             if (string.IsNullOrWhiteSpace(path))
             {
-                path = $"{Application.dataPath}/{resources}".ToForward();
+                path = EditorUtility.SaveFolderPanel(
+                    $"Create new {typeof(T).Name}",
+                    $"{Application.dataPath}/{resources}".ToForward(),
+                    string.Empty);
+
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    path = $"{Application.dataPath}/{resources}".ToForward();
+                }
             }
 
-            path = path.Replace(asset, string.Empty);
+            path = path.Replace(assetExt, string.Empty);
 
             if (!string.IsNullOrWhiteSpace(Path.GetExtension(path)))
             {
@@ -68,8 +76,8 @@ namespace Utilities.Extensions.Editor
                 Directory.CreateDirectory(Path.GetFullPath(path));
             }
 
-            // uses backslash on purpose bc Unity likes it that way.
-            path = $"{path}/{name}{asset}";
+            // uses forward on purpose bc Unity likes it that way.
+            path = $"{path}/{name}{assetExt}";
 
             if (unique)
             {
@@ -101,7 +109,7 @@ namespace Utilities.Extensions.Editor
                 };
             }
 
-            Debug.Assert(scriptableObject != null);
+            Debug.Assert(scriptableObject.IsNotNull());
             return scriptableObject;
         }
 
@@ -113,7 +121,8 @@ namespace Utilities.Extensions.Editor
         }
 
         /// <summary>
-        /// Attempts to find the asset associated to the instance of the <see cref="ScriptableObject"/>, if none is found a new asset is created.
+        /// Attempts to find the asset associated to the instance of the <see cref="ScriptableObject"/>,
+        /// if none is found a new asset is created.
         /// </summary>
         /// <param name="scriptableObject"><see cref="ScriptableObject"/> you want to create an asset file for.</param>
         /// <param name="ping">The new asset should be selected and opened in the inspector.</param>
@@ -121,7 +130,8 @@ namespace Utilities.Extensions.Editor
             => GetOrCreateAsset(scriptableObject, null, ping);
 
         /// <summary>
-        /// Attempts to find the asset associated to the instance of the <see cref="ScriptableObject"/>, if none is found a new asset is created.
+        /// Attempts to find the asset associated to the instance of the <see cref="ScriptableObject"/>,
+        /// if none is found a new asset is created.
         /// </summary>
         /// <param name="scriptableObject"><see cref="ScriptableObject"/> you want to create an asset file for.</param>
         /// <param name="path">Optional path for the new asset.</param>
@@ -130,7 +140,8 @@ namespace Utilities.Extensions.Editor
             => GetOrCreateAsset(scriptableObject, path, null, ping);
 
         /// <summary>
-        /// Attempts to find the asset associated to the instance of the <see cref="ScriptableObject"/>, if none is found a new asset is created.
+        /// Attempts to find the asset associated to the instance of the <see cref="ScriptableObject"/>,
+        /// if none is found a new asset is created.
         /// </summary>
         /// <param name="scriptableObject"><see cref="ScriptableObject"/> you want get or create an asset file for.</param>
         /// <param name="path">Optional path for the new asset.</param>
@@ -152,7 +163,7 @@ namespace Utilities.Extensions.Editor
             var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
             var instances = new T[guids.Length];
 
-            for (int i = 0; i < guids.Length; i++)
+            for (var i = 0; i < guids.Length; i++)
             {
                 instances[i] = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guids[i]));
             }
