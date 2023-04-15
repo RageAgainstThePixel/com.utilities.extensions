@@ -81,7 +81,7 @@ namespace Utilities.Extensions.Editor
 
             if (unique)
             {
-                AssetDatabase.GenerateUniqueAssetPath(path);
+                path = AssetDatabase.GenerateUniqueAssetPath(path);
             }
 
             if (File.Exists(Path.GetFullPath(path)))
