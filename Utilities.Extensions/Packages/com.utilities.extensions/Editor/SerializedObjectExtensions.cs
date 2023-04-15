@@ -8,5 +8,7 @@ namespace Utilities.Extensions.Editor
     {
         public static bool IsNull(this SerializedObject @object)
             => @object == null || @object.targetObject == null;
+
+        public static bool IsNotNull(this SerializedObject @object) => !IsNull(@object);
     }
 }
