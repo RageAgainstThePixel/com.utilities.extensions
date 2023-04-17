@@ -37,7 +37,7 @@ namespace Utilities.Extensions.Editor
         /// <param name="fileName">Optional filename for the new asset.</param>
         /// <param name="ping">The new asset should be selected and opened in the inspector.</param>
         /// <param name="unique">Is the new asset unique, or can we make copies?</param>
-        public static T CreateAsset<T>(this T scriptableObject, string path, string fileName, bool ping, bool unique) where T : ScriptableObject
+        public static T CreateAsset<T>(this T scriptableObject, string path, string fileName, bool ping, bool unique = true) where T : ScriptableObject
         {
             const string assetExt = ".asset";
             const string resources = "Resources";
@@ -49,14 +49,21 @@ namespace Utilities.Extensions.Editor
 
             if (string.IsNullOrWhiteSpace(path))
             {
+                var defaultPath = $"{Application.dataPath}/{resources}".ToForward();
+
+                if (!Directory.Exists(defaultPath))
+                {
+                    Directory.CreateDirectory(defaultPath);
+                }
+
                 path = EditorUtility.SaveFolderPanel(
                     $"Create new {typeof(T).Name}",
-                    $"{Application.dataPath}/{resources}".ToForward(),
+                    defaultPath,
                     string.Empty);
 
                 if (string.IsNullOrWhiteSpace(path))
                 {
-                    path = $"{Application.dataPath}/{resources}".ToForward();
+                    path = defaultPath;
                 }
             }
 
