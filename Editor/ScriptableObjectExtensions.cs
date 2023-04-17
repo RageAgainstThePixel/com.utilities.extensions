@@ -1,6 +1,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -168,14 +169,19 @@ namespace Utilities.Extensions.Editor
         {
             // FindAssets uses tags check documentation for more info
             var guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
-            var instances = new T[guids.Length];
+            var instances = new List<T>();
 
             for (var i = 0; i < guids.Length; i++)
             {
-                instances[i] = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guids[i]));
+                var instance = AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guids[i]));
+
+                if (instance.IsNotNull())
+                {
+                    instances[i] = instance;
+                }
             }
 
-            return instances;
+            return instances.ToArray();
         }
     }
 }
