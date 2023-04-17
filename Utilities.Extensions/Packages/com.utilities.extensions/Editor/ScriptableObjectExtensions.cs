@@ -177,7 +177,7 @@ namespace Utilities.Extensions.Editor
 
                 if (instance.IsNotNull())
                 {
-                    instances[i] = instance;
+                    instances.Add(instance);
                 }
             }
 
