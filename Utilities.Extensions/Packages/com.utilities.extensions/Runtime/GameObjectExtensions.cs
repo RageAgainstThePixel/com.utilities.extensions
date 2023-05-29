@@ -100,9 +100,9 @@ namespace Utilities.Extensions
             action(root);
             var items = root.GetComponentsInChildren<Transform>();
 
-            for (var i = 0; i < items.Length; i++)
+            foreach (var item in items)
             {
-                action(items[i].gameObject);
+                action(item.gameObject);
             }
         }
 
@@ -232,8 +232,12 @@ namespace Utilities.Extensions
         /// <returns>The existing or new instance of <see cref="Component"/>.</returns>
         public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
         {
-            T component = gameObject.GetComponent<T>();
-            return component.IsNull() ? gameObject.AddComponent<T>() : component;
+            if (!gameObject.TryGetComponent<T>(out var component))
+            {
+                component = gameObject.AddComponent<T>();
+            }
+
+            return component;
         }
     }
 }
