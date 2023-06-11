@@ -1,6 +1,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#if UNITY_ADDRESSABLES
+#if UNITY_ADDRESSABLES && UTILITIES_ASYNC
 
 using System;
 using System.Threading.Tasks;
@@ -38,4 +38,4 @@ namespace Utilities.Extensions
             => !string.IsNullOrWhiteSpace(sceneInstance.Scene.path) && sceneInstance.Scene.IsValid();
     }
 }
-#endif // UNITY_ADDRESSABLES
+#endif // UNITY_ADDRESSABLES && UTILITIES_ASYNC
