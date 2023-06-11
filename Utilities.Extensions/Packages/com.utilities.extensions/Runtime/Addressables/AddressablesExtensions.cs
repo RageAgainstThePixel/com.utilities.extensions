@@ -152,4 +152,4 @@ namespace Utilities.Extensions
     }
 }
 
-#endif // UNITY_ADDRESSABLES
+#endif // UNITY_ADDRESSABLES && UTILITIES_ASYNC
