@@ -78,7 +78,7 @@ namespace Utilities.Extensions.Editor
             public float height;
         }
 
-        public static float GetTextAreaHeight(SerializedProperty property, float width, int minLines = 1, int maxLines = 12)
+        public static float GetTextAreaHeight(SerializedProperty property, float width, int minLines = 1, int maxLines = 10)
         {
             property.serializedObject.Update();
             if (string.IsNullOrWhiteSpace(property.stringValue))
