@@ -8,10 +8,10 @@ namespace Utilities.Extensions.Editor
     public static class SerializedPropertyExtensions
     {
         /// <summary>
-        /// Checks if the underlying <see cref="UnityEngine.Object"/> reference is null or missing.
+        /// Checks if the underlying <see cref="Object"/> reference is null or missing.
         /// </summary>
         /// <param name="property"></param>
-        /// <returns>True, if <see cref="UnityEngine.Object"/> reference is null or missing.</returns>
+        /// <returns>True, if <see cref="Object"/> reference is null or missing.</returns>
         public static bool IsMissingObjectReference(this SerializedProperty property)
         {
             if (property == null) { return true; }
@@ -78,5 +78,8 @@ namespace Utilities.Extensions.Editor
                     break;
             }
         }
+
+        public static string GetUniqueIdentifier(this SerializedProperty property)
+            => $"{property.serializedObject.targetObject.GetInstanceID()}/{property.propertyPath}";
     }
 }
