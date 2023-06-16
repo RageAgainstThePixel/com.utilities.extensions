@@ -57,19 +57,28 @@ namespace Utilities.Extensions.Editor
                 return list;
             }
 
-            public bool TryAddNewItem(out KeyValuePair<SerializedProperty, SerializedProperty> item)
+            public bool CanAddNewItem()
             {
                 UpdateSerializedObject();
-
                 var items = ToList();
 
-                foreach (var (key, value) in items)
+                foreach (var (key, _) in items)
                 {
                     if (key.IsDefaultValue())
                     {
-                        item = default;
                         return false;
                     }
+                }
+
+                return true;
+            }
+
+            public bool TryAddNewItem(out KeyValuePair<SerializedProperty, SerializedProperty> item)
+            {
+                if (!CanAddNewItem())
+                {
+                    item = default;
+                    return false;
                 }
 
                 var index = keyData.arraySize;
@@ -132,8 +141,10 @@ namespace Utilities.Extensions.Editor
                     list.drawHeaderCallback += rect => { EditorGUI.LabelField(rect, label); };
                     list.drawElementCallback += (rect, index, active, focused) =>
                     {
-                        OnListDrawElementCallback(rect, index, active, focused, list, serializedDictionary);
+                        OnListDrawElementCallback(rect, index, active, focused, serializedDictionary);
                     };
+
+                    list.onCanAddCallback += _ => serializedDictionary.CanAddNewItem();
                     list.onAddCallback += reorderableList =>
                     {
                         OnListOnAddCallback(reorderableList, serializedDictionary);
@@ -151,7 +162,9 @@ namespace Utilities.Extensions.Editor
             EditorGUI.EndProperty();
         }
 
-        private void OnListDrawElementCallback(Rect rect, int index, bool active, bool focused, ReorderableList reorderableList, SerializedDictionaryObject serializedDictionary)
+        #region List Callbacks
+
+        private static void OnListDrawElementCallback(Rect rect, int index, bool active, bool focused, SerializedDictionaryObject serializedDictionary)
         {
             serializedDictionary.UpdateSerializedObject();
             var item = serializedDictionary.GetArrayElementAtIndex(index);
@@ -182,7 +195,7 @@ namespace Utilities.Extensions.Editor
             }
         }
 
-        private void OnListOnAddCallback(ReorderableList reorderableList, SerializedDictionaryObject serializedDictionary)
+        private static void OnListOnAddCallback(ReorderableList reorderableList, SerializedDictionaryObject serializedDictionary)
         {
             if (serializedDictionary.TryAddNewItem(out var item))
             {
@@ -191,7 +204,7 @@ namespace Utilities.Extensions.Editor
             }
         }
 
-        private void OnListRemoveCallback(ReorderableList reorderableList, SerializedDictionaryObject serializedDictionary)
+        private static void OnListRemoveCallback(ReorderableList reorderableList, SerializedDictionaryObject serializedDictionary)
         {
             if (serializedDictionary.selectedElement.HasValue)
             {
@@ -207,14 +220,11 @@ namespace Utilities.Extensions.Editor
             reorderableList.Select(reorderableList.count - 1);
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            if (reorderableListCache.TryGetValue(property.propertyPath, out var list))
-            {
-                return list.GetHeight() + EditorGUIUtility.singleLineHeight;
-            }
+        #endregion List Callbacks
 
-            return base.GetPropertyHeight(property, label);
-        }
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+            => reorderableListCache.TryGetValue(property.propertyPath, out var list)
+                ? list.GetHeight()
+                : base.GetPropertyHeight(property, label);
     }
 }
