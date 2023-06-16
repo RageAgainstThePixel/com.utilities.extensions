@@ -16,10 +16,13 @@ namespace Utilities.Extensions.Editor
             public SerializedDictionaryObject(SerializedProperty property)
             {
                 this.property = property;
+                guid = property.GetUniqueIdentifier();
                 keyData = property.FindPropertyRelative(nameof(keyData));
                 valueData = property.FindPropertyRelative(nameof(valueData));
                 Assert.IsTrue(keyData.isArray && valueData.isArray && keyData.arraySize == valueData.arraySize);
             }
+
+            public readonly string guid;
 
             private readonly SerializedProperty property;
 
@@ -133,7 +136,7 @@ namespace Utilities.Extensions.Editor
 
             var serializedDictionary = new SerializedDictionaryObject(property);
 
-            if (!reorderableListCache.TryGetValue(property.propertyPath, out var list))
+            if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list))
             {
                 list = new ReorderableList(serializedDictionary.ToList(), typeof(KeyValuePair<,>), false, true, true, true);
                 list.drawHeaderCallback += rect => { EditorGUI.LabelField(rect, label); };
@@ -151,7 +154,7 @@ namespace Utilities.Extensions.Editor
                 {
                     OnListRemoveCallback(reorderableList, serializedDictionary);
                 };
-                reorderableListCache[property.propertyPath] = list;
+                reorderableListCache[serializedDictionary.guid] = list;
             }
 
             list.DoList(position);
@@ -241,14 +244,12 @@ namespace Utilities.Extensions.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            if (reorderableListCache.TryGetValue(property.propertyPath, out var list))
+            if (reorderableListCache.TryGetValue(property.GetUniqueIdentifier(), out var list))
             {
                 return list.GetHeight();
             }
-            else
-            {
-                return base.GetPropertyHeight(property, label);
-            }
+
+            return base.GetPropertyHeight(property, label);
         }
     }
 }
