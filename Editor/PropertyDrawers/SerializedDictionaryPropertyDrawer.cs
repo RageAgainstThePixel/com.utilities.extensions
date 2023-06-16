@@ -133,31 +133,28 @@ namespace Utilities.Extensions.Editor
 
             var serializedDictionary = new SerializedDictionaryObject(property);
 
-            if (property.isExpanded)
+            if (!reorderableListCache.TryGetValue(property.propertyPath, out var list))
             {
-                if (!reorderableListCache.TryGetValue(property.propertyPath, out var list))
+                list = new ReorderableList(serializedDictionary.ToList(), typeof(KeyValuePair<,>), false, true, true, true);
+                list.drawHeaderCallback += rect => { EditorGUI.LabelField(rect, label); };
+                list.drawElementCallback += (rect, index, active, focused) =>
                 {
-                    list = new ReorderableList(serializedDictionary.ToList(), typeof(KeyValuePair<,>), false, true, true, true);
-                    list.drawHeaderCallback += rect => { EditorGUI.LabelField(rect, label); };
-                    list.drawElementCallback += (rect, index, active, focused) =>
-                    {
-                        OnListDrawElementCallback(rect, index, active, focused, serializedDictionary);
-                    };
-                    list.elementHeightCallback += index => OnListElementHeightCallback(index, serializedDictionary);
-                    list.onCanAddCallback += _ => serializedDictionary.CanAddNewItem();
-                    list.onAddCallback += reorderableList =>
-                    {
-                        OnListOnAddCallback(reorderableList, serializedDictionary);
-                    };
-                    list.onRemoveCallback += reorderableList =>
-                    {
-                        OnListRemoveCallback(reorderableList, serializedDictionary);
-                    };
-                    reorderableListCache[property.propertyPath] = list;
-                }
-
-                list.DoList(position);
+                    OnListDrawElementCallback(rect, index, active, focused, serializedDictionary);
+                };
+                list.elementHeightCallback += index => OnListElementHeightCallback(index, serializedDictionary);
+                list.onCanAddCallback += _ => serializedDictionary.CanAddNewItem();
+                list.onAddCallback += reorderableList =>
+                {
+                    OnListOnAddCallback(reorderableList, serializedDictionary);
+                };
+                list.onRemoveCallback += reorderableList =>
+                {
+                    OnListRemoveCallback(reorderableList, serializedDictionary);
+                };
+                reorderableListCache[property.propertyPath] = list;
             }
+
+            list.DoList(position);
 
             EditorGUI.EndProperty();
         }
