@@ -3,7 +3,7 @@
   "displayName": "Utilities.Extensions",
   "description": "Common extensions for Unity types (UPM)",
   "keywords": [],
-  "version": "1.1.3",
+  "version": "1.1.4",
   "unity": "2021.3",
   "documentationUrl": "https://github.com/RageAgainstThePixel/com.utilities.extensions#documentation",
   "changelogUrl": "https://github.com/RageAgainstThePixel/com.utilities.extensions/releases",
