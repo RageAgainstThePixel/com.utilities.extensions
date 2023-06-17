@@ -93,14 +93,14 @@ namespace Utilities.Extensions.Editor
             cachedTextAreaHeights.TryAdd(guid, new TextAreaHeight(new GUIContent(property.stringValue), 0));
             var cachedContent = cachedTextAreaHeights[guid].content;
             var cachedHeight = cachedTextAreaHeights[guid].height;
-            var textAreaHeight = EditorStyles.textArea.CalcHeight(cachedContent, width);
+            var cachedTextAreaHeight = EditorStyles.textArea.CalcHeight(cachedContent, width);
             var baseTextAreaHeight = EditorGUIUtility.singleLineHeight;
-            var result = baseTextAreaHeight + ((Mathf.Clamp(Mathf.CeilToInt(textAreaHeight / lineHeight), minLines, maxLines) - 1) * lineHeight);
+            var result = baseTextAreaHeight + ((Mathf.Clamp(Mathf.CeilToInt(cachedTextAreaHeight / lineHeight), minLines, maxLines) - 1) * lineHeight);
 
-            if (!Mathf.Approximately(result, cachedHeight))
+            if (!Mathf.Approximately(result, cachedHeight) &&
+                property.stringValue.Equals(cachedContent.text))
             {
-                if (cachedHeight > 0 &&
-                    property.stringValue.Equals(cachedContent.text))
+                if (cachedHeight > 0)
                 {
                     return cachedHeight;
                 }

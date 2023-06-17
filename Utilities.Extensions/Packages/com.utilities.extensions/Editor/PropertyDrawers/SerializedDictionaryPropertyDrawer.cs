@@ -1,6 +1,5 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditorInternal;
@@ -11,123 +10,6 @@ namespace Utilities.Extensions.Editor
     [CustomPropertyDrawer(typeof(SerializedDictionary<,>), true)]
     public class SerializedDictionaryPropertyDrawer : PropertyDrawer
     {
-        private class SerializedDictionaryObject
-        {
-            public SerializedDictionaryObject(SerializedProperty property)
-            {
-                this.property = property;
-                guid = property.GetUniqueIdentifier();
-                keyData = property.FindPropertyRelative(nameof(keyData));
-                valueData = property.FindPropertyRelative(nameof(valueData));
-                Assert.IsTrue(keyData.isArray && valueData.isArray && keyData.arraySize == valueData.arraySize);
-            }
-
-            public readonly string guid;
-
-            private readonly SerializedProperty property;
-
-            public readonly SerializedProperty keyData;
-
-            public readonly SerializedProperty valueData;
-
-            public int? selectedElement { get; set; }
-
-            public int arraySize => keyData.arraySize;
-
-            public KeyValuePair<SerializedProperty, SerializedProperty> tempItem;
-
-            public KeyValuePair<SerializedProperty, SerializedProperty> GetArrayElementAtIndex(int index)
-            {
-                UpdateSerializedObject();
-                return new KeyValuePair<SerializedProperty, SerializedProperty>(
-                    keyData.GetArrayElementAtIndex(index),
-                    valueData.GetArrayElementAtIndex(index));
-            }
-
-            public List<KeyValuePair<SerializedProperty, SerializedProperty>> ToList()
-            {
-                UpdateSerializedObject();
-                var size = arraySize;
-                var list = new List<KeyValuePair<SerializedProperty, SerializedProperty>>(size);
-
-                for (var i = 0; i < size; i++)
-                {
-                    var keyProperty = keyData.GetArrayElementAtIndex(i);
-                    var valueProperty = valueData.GetArrayElementAtIndex(i);
-                    list.Add(new KeyValuePair<SerializedProperty, SerializedProperty>(keyProperty, valueProperty));
-                }
-
-                return list;
-            }
-
-            public bool CanAddNewItem()
-            {
-                UpdateSerializedObject();
-                var items = ToList();
-
-                foreach (var (key, _) in items)
-                {
-                    if (key.IsDefaultValue())
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-
-            public bool TryAddNewItem(out KeyValuePair<SerializedProperty, SerializedProperty> item)
-            {
-                if (!CanAddNewItem())
-                {
-                    item = default;
-                    return false;
-                }
-
-                var index = keyData.arraySize;
-                keyData.InsertArrayElementAtIndex(index);
-                valueData.InsertArrayElementAtIndex(index);
-                var keyProperty = keyData.GetArrayElementAtIndex(index);
-                keyProperty.SetDefaultValue();
-                var valueProperty = valueData.GetArrayElementAtIndex(index);
-                valueProperty.SetDefaultValue();
-                ApplyModifiedProperties();
-                item = new KeyValuePair<SerializedProperty, SerializedProperty>(keyProperty, valueProperty);
-                return true;
-            }
-
-            public void RemoveItemAt(int index)
-            {
-                UpdateSerializedObject();
-                keyData.DeleteArrayElementAtIndex(index);
-                valueData.DeleteArrayElementAtIndex(index);
-                ApplyModifiedProperties();
-            }
-
-            public void RemoveLastItem() => RemoveItemAt(arraySize - 1);
-
-            public void UpdateSerializedObject()
-            {
-                property.serializedObject.Update();
-                keyData.serializedObject.Update();
-                valueData.serializedObject.Update();
-            }
-
-            public void ApplyModifiedProperties()
-            {
-                property.serializedObject.ApplyModifiedProperties();
-                keyData.serializedObject.ApplyModifiedProperties();
-                valueData.serializedObject.ApplyModifiedProperties();
-            }
-
-            public void ApplyModifiedPropertiesWithoutUndo()
-            {
-                property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                keyData.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                valueData.serializedObject.ApplyModifiedPropertiesWithoutUndo();
-            }
-        }
-
         private static readonly Dictionary<string, ReorderableList> reorderableListCache = new Dictionary<string, ReorderableList>();
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -136,7 +18,8 @@ namespace Utilities.Extensions.Editor
 
             var serializedDictionary = new SerializedDictionaryObject(property);
 
-            if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list))
+            if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list) ||
+                list.count != serializedDictionary.size)
             {
                 list = new ReorderableList(serializedDictionary.ToList(), typeof(KeyValuePair<,>), false, true, true, true);
                 list.drawHeaderCallback += rect => { EditorGUI.LabelField(rect, label); };
@@ -217,7 +100,7 @@ namespace Utilities.Extensions.Editor
 
         private static void OnListOnAddCallback(ReorderableList reorderableList, SerializedDictionaryObject serializedDictionary)
         {
-            if (serializedDictionary.TryAddNewItem(out var item))
+            if (serializedDictionary.TryAddNewEmptyItem(out var item))
             {
                 reorderableList.list.Add(item);
                 reorderableList.Select(reorderableList.count - 1);
@@ -243,13 +126,8 @@ namespace Utilities.Extensions.Editor
         #endregion List Callbacks
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            if (reorderableListCache.TryGetValue(property.GetUniqueIdentifier(), out var list))
-            {
-                return list.GetHeight();
-            }
-
-            return base.GetPropertyHeight(property, label);
-        }
+            => reorderableListCache.TryGetValue(property.GetUniqueIdentifier(), out var list)
+                ? list.GetHeight()
+                : base.GetPropertyHeight(property, label);
     }
 }
