@@ -57,14 +57,24 @@ namespace Utilities.Extensions.Editor
                 serializedDictionary.selectedElement = index;
             }
 
+            var keyHeight = key.propertyType == SerializedPropertyType.String
+                ? EditorGUILayoutExtensions.GetTextAreaHeight(key, rect.width)
+                : EditorGUIUtility.singleLineHeight;
+            var keyRect = new Rect(rect.x, rect.y, rect.width, keyHeight);
+            var valueHeight = value.propertyType == SerializedPropertyType.String
+                ? EditorGUILayoutExtensions.GetTextAreaHeight(value, rect.width)
+                : EditorGUIUtility.singleLineHeight;
+            var valueRect = new Rect(rect.x, rect.y + keyHeight + EditorGUIUtility.standardVerticalSpacing, rect.width, valueHeight);
+
             EditorGUI.BeginChangeCheck();
-
-            var lineHeight = EditorGUIUtility.singleLineHeight;
-            var keyRect = new Rect(rect.x, rect.y, rect.width, lineHeight);
-            var valueHeight = EditorGUILayoutExtensions.GetTextAreaHeight(value, rect.width);
-            var valueRect = new Rect(rect.x, rect.y + lineHeight + EditorGUIUtility.standardVerticalSpacing, rect.width, valueHeight);
-
             EditorGUI.PropertyField(keyRect, key, GUIContent.none);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedDictionary.ApplyModifiedProperties();
+            }
+
+            EditorGUI.BeginChangeCheck();
 
             if (value.propertyType == SerializedPropertyType.String)
             {
@@ -87,7 +97,11 @@ namespace Utilities.Extensions.Editor
             var (key, value) = serializedDictionary.GetArrayElementAtIndex(index);
 
             // Calculate heights taking into account multi-line serialized properties for value property
-            var keyHeight = EditorGUI.GetPropertyHeight(key, true);
+            var keyHeight = key.propertyType switch
+            {
+                SerializedPropertyType.String => EditorGUILayoutExtensions.GetTextAreaHeight(key, EditorGUIUtility.currentViewWidth),
+                _ => EditorGUI.GetPropertyHeight(key, true)
+            };
             var valueHeight = value.propertyType switch
             {
                 SerializedPropertyType.String => EditorGUILayoutExtensions.GetTextAreaHeight(value, EditorGUIUtility.currentViewWidth),
