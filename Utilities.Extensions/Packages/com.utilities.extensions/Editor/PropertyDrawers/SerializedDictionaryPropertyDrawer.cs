@@ -18,26 +18,63 @@ namespace Utilities.Extensions.Editor
 
             var serializedDictionary = new SerializedDictionaryObject(property);
 
-            if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list) ||
-                list.count != serializedDictionary.size)
+            void OnValueDrawHeaderCallback(Rect rect)
+            {
+                EditorGUI.LabelField(rect, label);
+            }
+
+            void OnValueDrawElementCallback(Rect rect, int index, bool active, bool focused)
+            {
+                OnListDrawElementCallback(rect, index, active, focused, serializedDictionary);
+            }
+
+            float OnValueElementHeightCallback(int index) => OnListElementHeightCallback(index, serializedDictionary);
+
+            bool OnValueOnCanAddCallback(ReorderableList _) => serializedDictionary.CanAddNewItem();
+
+            void OnValueOnAddCallback(ReorderableList reorderableList)
+            {
+                OnListOnAddCallback(reorderableList, serializedDictionary);
+            }
+
+            void OnValueOnRemoveCallback(ReorderableList reorderableList)
+            {
+                OnListRemoveCallback(reorderableList, serializedDictionary);
+            }
+
+            void AddCallbacks(ReorderableList orderedList)
+            {
+                orderedList.drawHeaderCallback += OnValueDrawHeaderCallback;
+                orderedList.drawElementCallback += OnValueDrawElementCallback;
+                orderedList.elementHeightCallback += OnValueElementHeightCallback;
+                orderedList.onCanAddCallback += OnValueOnCanAddCallback;
+                orderedList.onAddCallback += OnValueOnAddCallback;
+                orderedList.onRemoveCallback += OnValueOnRemoveCallback;
+            }
+
+            void RemoveCallbacks(ReorderableList orderedList)
+            {
+                orderedList.drawHeaderCallback -= OnValueDrawHeaderCallback;
+                orderedList.drawElementCallback -= OnValueDrawElementCallback;
+                orderedList.elementHeightCallback -= OnValueElementHeightCallback;
+                orderedList.onCanAddCallback -= OnValueOnCanAddCallback;
+                orderedList.onAddCallback -= OnValueOnAddCallback;
+                orderedList.onRemoveCallback -= OnValueOnRemoveCallback;
+            }
+
+            if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list))
             {
                 list = new ReorderableList(serializedDictionary.ToList(), typeof(KeyValuePair<,>), false, true, true, true);
-                list.drawHeaderCallback += rect => { EditorGUI.LabelField(rect, label); };
-                list.drawElementCallback += (rect, index, active, focused) =>
-                {
-                    OnListDrawElementCallback(rect, index, active, focused, serializedDictionary);
-                };
-                list.elementHeightCallback += index => OnListElementHeightCallback(index, serializedDictionary);
-                list.onCanAddCallback += _ => serializedDictionary.CanAddNewItem();
-                list.onAddCallback += reorderableList =>
-                {
-                    OnListOnAddCallback(reorderableList, serializedDictionary);
-                };
-                list.onRemoveCallback += reorderableList =>
-                {
-                    OnListRemoveCallback(reorderableList, serializedDictionary);
-                };
+                AddCallbacks(list);
                 reorderableListCache[serializedDictionary.guid] = list;
+            }
+            else
+            {
+                if (list.count != serializedDictionary.size)
+                {
+                    RemoveCallbacks(list);
+                    AddCallbacks(list);
+                }
             }
 
             list.DoList(position);
@@ -49,7 +86,12 @@ namespace Utilities.Extensions.Editor
 
         private static void OnListDrawElementCallback(Rect rect, int index, bool active, bool focused, SerializedDictionaryObject serializedDictionary)
         {
-            serializedDictionary.UpdateSerializedObject();
+            if (serializedDictionary.IsNull())
+            {
+                reorderableListCache.Remove(serializedDictionary.guid);
+                return;
+            }
+
             var (key, value) = serializedDictionary.GetArrayElementAtIndex(index);
 
             if (focused || active)
@@ -93,7 +135,13 @@ namespace Utilities.Extensions.Editor
 
         private static float OnListElementHeightCallback(int index, SerializedDictionaryObject serializedDictionary)
         {
+            if (serializedDictionary.IsNull())
+            {
+                return EditorGUIUtility.singleLineHeight;
+            }
+
             serializedDictionary.UpdateSerializedObject();
+
             var (key, value) = serializedDictionary.GetArrayElementAtIndex(index);
 
             // Calculate heights taking into account multi-line serialized properties for value property
