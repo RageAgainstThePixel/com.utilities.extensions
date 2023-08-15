@@ -1,8 +1,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 namespace Utilities.Extensions.Editor
 {
@@ -14,7 +14,7 @@ namespace Utilities.Extensions.Editor
             guid = property.GetUniqueIdentifier();
             keyData = property.FindPropertyRelative(nameof(keyData));
             valueData = property.FindPropertyRelative(nameof(valueData));
-            Assert.IsTrue(keyData.isArray && valueData.isArray && keyData.arraySize == valueData.arraySize);
+            Debug.Assert(keyData.isArray && valueData.isArray && keyData.arraySize == valueData.arraySize);
         }
 
         public readonly string guid;
@@ -27,7 +27,9 @@ namespace Utilities.Extensions.Editor
 
         internal int? selectedElement { get; set; }
 
-        public int size => keyData.arraySize;
+        public int size => IsNull() ? 0 : keyData.arraySize;
+
+        public bool IsNull() => property.serializedObject.IsNull();
 
         public KeyValuePair<SerializedProperty, SerializedProperty> GetArrayElementAtIndex(int index)
         {
@@ -54,6 +56,8 @@ namespace Utilities.Extensions.Editor
 
         internal bool CanAddNewItem()
         {
+            if (IsNull()) { return false; }
+
             UpdateSerializedObject();
             var items = ToList();
 
