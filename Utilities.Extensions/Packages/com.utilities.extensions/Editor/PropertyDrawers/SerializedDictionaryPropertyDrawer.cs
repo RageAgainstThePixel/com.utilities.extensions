@@ -62,19 +62,18 @@ namespace Utilities.Extensions.Editor
                 orderedList.onRemoveCallback -= OnValueOnRemoveCallback;
             }
 
-            if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list))
+            if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list) ||
+                list.count != serializedDictionary.size ||
+                serializedDictionary.IsNull())
             {
+                if (list != null)
+                {
+                    RemoveCallbacks(list);
+                }
+
                 list = new ReorderableList(serializedDictionary.ToList(), typeof(KeyValuePair<,>), false, true, true, true);
                 AddCallbacks(list);
                 reorderableListCache[serializedDictionary.guid] = list;
-            }
-            else
-            {
-                if (list.count != serializedDictionary.size)
-                {
-                    RemoveCallbacks(list);
-                    AddCallbacks(list);
-                }
             }
 
             list.DoList(position);
