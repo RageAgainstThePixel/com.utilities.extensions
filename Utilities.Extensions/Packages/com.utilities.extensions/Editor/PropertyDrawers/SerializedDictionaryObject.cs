@@ -58,7 +58,6 @@ namespace Utilities.Extensions.Editor
         {
             if (IsNull()) { return false; }
 
-            UpdateSerializedObject();
             var items = ToList();
 
             foreach (var (key, _) in items)
