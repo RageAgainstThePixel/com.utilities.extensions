@@ -90,20 +90,18 @@ namespace Utilities.Extensions.Editor
 
             const float lineHeight = 13f;
             var guid = property.GetUniqueIdentifier();
-            cachedTextAreaHeights.TryAdd(guid, new TextAreaHeight(new GUIContent(property.stringValue), 0));
+            var textContent = new GUIContent(property.stringValue);
+            cachedTextAreaHeights.TryAdd(guid, new TextAreaHeight(textContent, 0));
             var cachedContent = cachedTextAreaHeights[guid].content;
             var cachedHeight = cachedTextAreaHeights[guid].height;
-            var cachedTextAreaHeight = EditorStyles.textArea.CalcHeight(cachedContent, width);
+            var hasSameTextValue = property.stringValue.Equals(cachedContent.text);
+            var textAreaHeight = EditorStyles.textArea.CalcHeight(hasSameTextValue ? cachedContent : textContent, width);
             var baseTextAreaHeight = EditorGUIUtility.singleLineHeight;
-            var result = baseTextAreaHeight + ((Mathf.Clamp(Mathf.CeilToInt(cachedTextAreaHeight / lineHeight), minLines, maxLines) - 1) * lineHeight);
+            var result = baseTextAreaHeight + ((Mathf.Clamp(Mathf.CeilToInt(textAreaHeight / lineHeight), minLines, maxLines) - 1) * lineHeight);
 
-            if (!Mathf.Approximately(result, cachedHeight) &&
-                property.stringValue.Equals(cachedContent.text))
+            if (hasSameTextValue && cachedHeight > 0 && !Mathf.Approximately(result, cachedHeight))
             {
-                if (cachedHeight > 0)
-                {
-                    return cachedHeight;
-                }
+                return cachedHeight;
             }
 
             cachedTextAreaHeights[guid].content.text = property.stringValue;
