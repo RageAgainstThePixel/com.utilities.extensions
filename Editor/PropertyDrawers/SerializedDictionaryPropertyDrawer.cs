@@ -30,7 +30,7 @@ namespace Utilities.Extensions.Editor
 
             float OnValueElementHeightCallback(int index) => OnListElementHeightCallback(index, serializedDictionary);
 
-            bool OnValueOnCanAddCallback(ReorderableList _) => serializedDictionary.CanAddNewItem();
+            bool OnValueOnCanAddCallback(ReorderableList _) => serializedDictionary.size == 0 || serializedDictionary.CanAddNewItem();
 
             void OnValueOnAddCallback(ReorderableList reorderableList)
             {
@@ -64,6 +64,7 @@ namespace Utilities.Extensions.Editor
 
             if (!reorderableListCache.TryGetValue(serializedDictionary.guid, out var list) ||
                 list.count != serializedDictionary.size ||
+                serializedDictionary.size == 0 ||
                 serializedDictionary.IsNull())
             {
                 if (list != null)
