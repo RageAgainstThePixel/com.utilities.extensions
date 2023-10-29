@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
+using Object = UnityEngine.Object;
 
 namespace Utilities.Extensions.Editor
 {
@@ -171,16 +171,25 @@ namespace Utilities.Extensions.Editor
 
             try
             {
+                var asset = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
+
+                if (asset.IsNull())
+                {
+                    throw new Exception($"Invalid asset at {assetPath}");
+                }
+
                 if (!IsValidGuid(guid))
                 {
                     throw new Exception($"Invalid guid {guid}");
                 }
 
-                var existingGuid = AssetDatabase.AssetPathToGUID(assetPath);
+                var existingAsset = AssetDatabase.GUIDToAssetPath(guid);
 
-                if (!string.IsNullOrWhiteSpace(existingGuid))
+                // Don't set if the guid already matches
+                if (existingAsset == assetPath) { return; }
+
+                if (!string.IsNullOrWhiteSpace(existingAsset))
                 {
-                    var existingAsset = AssetDatabase.GUIDToAssetPath(existingGuid);
                     throw new Exception($"Guid {guid} already assigned to \"{existingAsset}\"!");
                 }
 
@@ -196,16 +205,12 @@ namespace Utilities.Extensions.Editor
                 File.WriteAllText(metaPath, contents);
 
                 // Now iterate over all assets and replace any occurrence of oldGuid with newGuid
-                var allAssetsPaths = AssetDatabase.GetAllAssetPaths();
-                int counter = 0;
+                var allAssetsPaths = GetUnityAssetsInDirectory(Application.dataPath).ToList();
+                var counter = 0;
 
-                foreach (var path in allAssetsPaths)
+                foreach (var path in allAssetsPaths.Where(path => assetPath != path))
                 {
-                    // Skip the asset itself
-                    if (assetPath == path) { continue; }
-
-                    EditorUtility.DisplayProgressBar("Replacing guids...", path, counter / (float)allAssetsPaths.Length);
-                    counter++;
+                    EditorUtility.DisplayProgressBar("Replacing guids...", path, ++counter / (float)allAssetsPaths.Count);
 
                     try
                     {
@@ -216,15 +221,6 @@ namespace Utilities.Extensions.Editor
                             assetContents = assetContents.Replace($"guid: {oldGuid}", $"guid: {guid}");
                             File.WriteAllText(path, assetContents);
                         }
-
-                        var assetMetaPath = AssetDatabase.GetTextMetaFilePathFromAssetPath(path);
-                        var assetMetadataContents = File.ReadAllText(assetMetaPath);
-
-                        if (assetMetadataContents.Contains(oldGuid))
-                        {
-                            assetMetadataContents = assetMetadataContents.Replace($"guid: {oldGuid}", $"guid: {guid}");
-                            File.WriteAllText(assetMetaPath, assetMetadataContents);
-                        }
                     }
                     catch (Exception e)
                     {
@@ -232,14 +228,11 @@ namespace Utilities.Extensions.Editor
                     }
                 }
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"Failed to set Guid for {assetPath}!\n{e}");
-            }
             finally
             {
                 AssetDatabase.StopAssetEditing();
                 EditorUtility.ClearProgressBar();
+                AssetDatabase.SaveAssets();
 
                 if (refreshAssetDatabase)
                 {
