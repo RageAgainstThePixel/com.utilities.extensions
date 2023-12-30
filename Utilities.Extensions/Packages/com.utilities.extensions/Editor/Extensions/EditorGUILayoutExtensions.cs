@@ -43,6 +43,11 @@ namespace Utilities.Extensions.Editor
             }
         }
 
+        /// <summary>
+        /// Draws a text area.
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="property"></param>
         public static void DrawTextArea(Rect rect, SerializedProperty property)
         {
             if (property.propertyType == SerializedPropertyType.String)
@@ -51,10 +56,10 @@ namespace Utilities.Extensions.Editor
                 scrollCache.TryAdd(guid, Vector2.zero);
                 var parameters = new object[]
                 {
-                rect,
-                property.stringValue,
-                scrollCache[guid],
-                EditorStyles.textArea
+                    rect,
+                    property.stringValue,
+                    scrollCache[guid],
+                    EditorStyles.textArea
                 };
                 property.stringValue = (string)ScrollableTextAreaInternal.Invoke(null, parameters);
                 scrollCache[guid] = (Vector2)parameters[2];
@@ -79,6 +84,14 @@ namespace Utilities.Extensions.Editor
             public float height;
         }
 
+        /// <summary>
+        /// Returns the height of a <see cref="TextAreaAttribute"/>.
+        /// </summary>
+        /// <param name="property"><see cref="SerializedProperty"/></param>
+        /// <param name="width">The width of property.</param>
+        /// <param name="minLines">Optional, default is 1.</param>
+        /// <param name="maxLines">Optional, default is 10.</param>
+        /// <returns>The height of the text area.</returns>
         public static float GetTextAreaHeight(SerializedProperty property, float width, int minLines = 1, int maxLines = 10)
         {
             property.serializedObject.Update();
@@ -86,6 +99,11 @@ namespace Utilities.Extensions.Editor
             if (string.IsNullOrWhiteSpace(property.stringValue))
             {
                 return EditorGUIUtility.singleLineHeight;
+            }
+
+            if (minLines < 1)
+            {
+                minLines = 1;
             }
 
             const float lineHeight = 13f;
@@ -107,6 +125,30 @@ namespace Utilities.Extensions.Editor
             cachedTextAreaHeights[guid].content.text = property.stringValue;
             cachedTextAreaHeights[guid].height = result;
             return result;
+        }
+
+        /// <summary>
+        /// Draws a progress bar.
+        /// </summary>
+        /// <param name="text">Text label for the progress bar.</param>
+        /// <param name="progress">The current value of the progress bar.</param>
+        /// <param name="guiLayoutOptions">Optional, <see cref="GUILayoutOption"/>s.</param>
+        public static void DrawProgressBar(string text, float progress, params GUILayoutOption[] guiLayoutOptions)
+            => DrawProgressBar(new GUIContent(text), progress, guiLayoutOptions);
+
+        /// <summary>
+        /// Draws a progress bar.
+        /// </summary>
+        /// <param name="content">Content label for the progress bar.</param>
+        /// <param name="progress">The current value of the progress bar.</param>
+        /// <param name="guiLayoutOptions">Optional, <see cref="GUILayoutOption"/>s.</param>
+        public static void DrawProgressBar(GUIContent content, float progress, params GUILayoutOption[] guiLayoutOptions)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(content);
+            var rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight, guiLayoutOptions);
+            EditorGUI.ProgressBar(rect, progress, $"{progress * 100f}%");
+            EditorGUILayout.EndHorizontal();
         }
     }
 }
