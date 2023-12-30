@@ -29,11 +29,25 @@ Common extensions for for the [Unity](https://unity.com/) Game Engine types.
 
 ### Runtime Extensions
 
+- Addressables Extensions
 - Component Extensions
 - GameObject Extensions
 - Transform Extensions
 - Unity.Object Extensions
 
+### Runtime Utilities
+
+- Serialized Dictionary
+
 ### Editor Extensions
 
+- EditorGUILayout Extensions
+- SerializedProperty Extensions
 - ScriptableObject Extensions
+- Unity.Object Extensions
+
+### Editor Utilities
+
+- AbstractDashboardWindow
+- Regenerate asset Guids
+- Script Icon Utility
