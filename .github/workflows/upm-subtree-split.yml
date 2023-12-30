@@ -21,3 +21,5 @@ jobs:
         Write-Host $packageDir
         git subtree split --prefix="$packageDir" -b upm
         git push -u origin upm --force
+      working-directory: ${{ github.workspace }}
+      shell: pwsh
