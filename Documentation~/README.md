@@ -6,6 +6,10 @@ Common extensions for for the [Unity](https://unity.com/) Game Engine types.
 
 ## Installing
 
+Requires Unity 2021.3 LTS or higher.
+
+The recommended installation method is though the unity package manager and [OpenUPM](https://openupm.com/packages/com.utilities.extensions).
+
 ### Via Unity Package Manager and OpenUPM
 
 - Open your Unity project settings
