@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - main
+
 jobs:
   upm-subtree-split:
     runs-on: ubuntu-latest
@@ -12,14 +13,4 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: upm subtree split
-      run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        $packageDir = Get-Item -Path "**/Packages/com.*" | Select-Object -ExpandProperty FullName
-        $packageDir = $packageDir.replace('${{ github.workspace }}/','')
-        Write-Host $packageDir
-        git subtree split --prefix="$packageDir" -b upm
-        git push -u origin upm --force
-      working-directory: ${{ github.workspace }}
-      shell: pwsh
+    - uses: RageAgainstThePixel/upm-subtree-split@v1
