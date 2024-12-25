@@ -464,5 +464,24 @@ namespace Utilities.Extensions
             target.localScale = newScale;
             target.localPosition = finalPosition;
         }
+
+        /// <summary>
+        /// Find a child transform with the specified name.
+        /// </summary>
+        /// <param name="parent">The parent to start search from.</param>
+        /// <param name="name">The name of the transform to find.</param>
+        /// <returns><see cref="Transform"/> that matches <see cref="name"/> or null.</returns>
+        public static Transform FindChildRecursive(this Transform parent, string name)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                var child = parent.GetChild(i);
+                if (child.name.Contains(name)) { return child; }
+                var result = child.FindChildRecursive(name);
+                if (result != null) { return result; }
+            }
+
+            return null;
+        }
     }
 }
