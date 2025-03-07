@@ -9,7 +9,6 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Utilities.Async;
-using Utilities.Async.Addressables;
 
 namespace Utilities.Extensions
 {
@@ -38,15 +37,25 @@ namespace Utilities.Extensions
         /// </summary>
         /// <param name="key">Path.</param>
         /// <param name="progress">Optional, <see cref="IProgress{T}"/></param>
-        public static async Task DownloadAddressableAsync(object key, IProgress<float> progress = null)
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/></param>
+        public static async Task DownloadAddressableAsync(object key, IProgress<float> progress = null, CancellationToken cancellationToken = default)
         {
             var downloadSizeOp = Addressables.GetDownloadSizeAsync(key);
-            var downloadSize = await downloadSizeOp;
-            downloadSizeOp.Release();
+            long downloadSize;
+
+            try
+            {
+                downloadSize = await downloadSizeOp.Task.WithCancellation(cancellationToken);
+
+            }
+            finally
+            {
+                downloadSizeOp.Release();
+            }
 
             if (downloadSize > 0)
             {
-                await Addressables.DownloadDependenciesAsync(key).AwaitWithProgress(progress);
+                await Addressables.DownloadDependenciesAsync(key).AwaitWithProgress(progress, true, cancellationToken);
             }
         }
 
@@ -54,38 +63,45 @@ namespace Utilities.Extensions
         /// Wait on the <see cref="AsyncOperationHandle{T}"/> with the provided <see cref="IProgress{T}"/>
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="operation"></param>
-        /// <param name="progress"></param>
-        /// <param name="autoRelease"></param>
-        public static async Task<T> AwaitWithProgress<T>(this AsyncOperationHandle<T> operation, IProgress<float> progress, bool autoRelease = true)
+        /// <param name="operation"><see cref="AsyncOperationHandle{T}"/></param>
+        /// <param name="progress">Optional, <see cref="IProgress{T}"/></param>
+        /// <param name="autoRelease">Should the <see cref="AsyncOperationHandle{T}"/> be automatically released? Defaults to true.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/></param>
+        public static async Task<T> AwaitWithProgress<T>(this AsyncOperationHandle<T> operation, IProgress<float> progress, bool autoRelease = true, CancellationToken cancellationToken = default)
         {
             Thread backgroundThread = null;
 
             if (progress != null)
             {
-                backgroundThread = new Thread(() => ProgressThread(operation, progress))
+                backgroundThread = new Thread(() => ProgressThread(operation, progress, cancellationToken))
                 {
                     IsBackground = true
                 };
             }
 
-            backgroundThread?.Start();
-            var result = await operation.Task;
-            backgroundThread?.Join();
+            T result;
 
-            var opException = operation.OperationException;
-
-            if (autoRelease)
+            try
             {
-                operation.Release();
+                backgroundThread?.Start();
+                result = await operation.Task.WithCancellation(cancellationToken);
             }
-
-            if (opException != null)
+            finally
             {
-                throw opException;
-            }
+                backgroundThread?.Join();
+                progress?.Report(100f);
 
-            progress?.Report(100f);
+                var opException = operation.OperationException;
+
+                if (autoRelease)
+                {
+                    operation.Release();
+                }
+                if (opException != null)
+                {
+                    throw opException;
+                }
+            }
 
             return result;
         }
@@ -93,47 +109,54 @@ namespace Utilities.Extensions
         /// <summary>
         /// Wait on the <see cref="AsyncOperationHandle"/> with the provided <see cref="IProgress{T}"/>
         /// </summary>
-        /// <param name="operation"></param>
-        /// <param name="progress"></param>
-        /// <param name="autoRelease"></param>
-        public static async Task AwaitWithProgress(this AsyncOperationHandle operation, IProgress<float> progress, bool autoRelease = true)
+        /// <param name="operation"><see cref="AsyncOperationHandle"/></param>
+        /// <param name="progress">Optional, <see cref="IProgress{T}"/></param>
+        /// <param name="autoRelease">Should the <see cref="AsyncOperationHandle"/> be automatically released? Defaults to true.</param>
+        /// <param name="cancellationToken">Optional, <see cref="CancellationToken"/></param>
+        public static async Task AwaitWithProgress(this AsyncOperationHandle operation, IProgress<float> progress, bool autoRelease = true, CancellationToken cancellationToken = default)
         {
             Thread backgroundThread = null;
 
             if (progress != null)
             {
-                backgroundThread = new Thread(() => ProgressThread(operation, progress))
+                backgroundThread = new Thread(() => ProgressThread(operation, progress, cancellationToken))
                 {
                     IsBackground = true
                 };
             }
 
-            backgroundThread?.Start();
-            await operation.Task;
-            backgroundThread?.Join();
-
-            var opException = operation.OperationException;
-
-            if (autoRelease)
-            {
-                operation.Release();
-            }
-
-            if (opException != null)
-            {
-                throw opException;
-            }
-
-            progress?.Report(100f);
-        }
-
-        private static async void ProgressThread(AsyncOperationHandle handle, IProgress<float> progress)
-        {
-            await Awaiters.UnityMainThread;
-
             try
             {
-                while (handle.IsValid() && !handle.IsDone)
+                backgroundThread?.Start();
+                await operation.Task.WithCancellation(cancellationToken);
+            }
+            finally
+            {
+                backgroundThread?.Join();
+                var opException = operation.OperationException;
+
+                if (autoRelease)
+                {
+                    operation.Release();
+                }
+
+                if (opException != null)
+                {
+                    throw opException;
+                }
+
+                progress?.Report(100f);
+            }
+        }
+
+        private static async void ProgressThread(AsyncOperationHandle handle, IProgress<float> progress, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // ensure we're on main thread.
+                await Awaiters.UnityMainThread;
+
+                while (handle.IsValid() && !handle.IsDone && !cancellationToken.IsCancellationRequested)
                 {
                     if (handle.OperationException != null)
                     {
@@ -141,7 +164,7 @@ namespace Utilities.Extensions
                     }
 
                     progress.Report(handle.PercentComplete * 100f);
-                    await Awaiters.UnityMainThread;
+                    await Task.Yield();
                 }
             }
             catch (Exception)
