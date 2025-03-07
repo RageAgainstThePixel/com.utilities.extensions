@@ -46,7 +46,6 @@ namespace Utilities.Extensions
             try
             {
                 downloadSize = await downloadSizeOp.Task.WithCancellation(cancellationToken);
-
             }
             finally
             {
