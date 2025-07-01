@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Utilities.Extensions
 {
@@ -150,12 +149,12 @@ namespace Utilities.Extensions
             {
                 renderer.enabled = isActive;
             }
-
-            foreach (var graphic in gameObject.GetComponentsInChildren<Graphic>())
+#if UNITY_UGUI
+            foreach (var graphic in gameObject.GetComponentsInChildren<UnityEngine.UI.Graphic>())
             {
                 graphic.enabled = isActive;
             }
-
+#endif
             if (includeColliders)
             {
                 foreach (var collider in gameObject.GetComponentsInChildren<Collider>())
