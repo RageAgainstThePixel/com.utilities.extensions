@@ -49,7 +49,7 @@ openupm add com.utilities.extensions
 
 ### Runtime Utilities
 
-- Serialized Dictionary
+- SerializedDictionary: A generic dictionary that can be serialized by Unity's serialization system, allowing you to use dictionaries in your MonoBehaviour and ScriptableObject classes.
 
 ### Editor Extensions
 
@@ -61,5 +61,14 @@ openupm add com.utilities.extensions
 ### Editor Utilities
 
 - AbstractDashboardWindow
-- Regenerate asset Guids
-- Script Icon Utility
+- Regenerate Asset Guids: A utility to regenerate the GUIDs of all assets in the project or a specified directory.
+- Script Icon Utility: A utility to set a custom icon for all scripts inside of a specified directory.
+- A component context utility to upgrade and downgrade components from derived, non-abstract types.
+
+### Attributes
+
+- SceneReferenceAttribute: When added to a serialized string field, it will render the scene picker in the inspector, allowing you to select a scene from the project. If the scene is not in the build settings, it will be added automatically.
+
+### Behaviours
+
+- LoadSceneButton: A simple uGUI button that loads a scene when clicked.
