@@ -120,6 +120,7 @@ namespace Utilities.Extensions.Editor
             // if something bad happened revert
             if (component.IsNull())
             {
+                Debug.LogWarning($"Failed to add component of type {type}. Falling back to adding the base component type {baseType}.");
                 component = gameObject.AddComponent(baseType);
             }
 
