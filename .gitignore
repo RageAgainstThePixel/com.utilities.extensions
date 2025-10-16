@@ -80,3 +80,4 @@ _ReSharper.Caches
 # ===================== #
 --Version/
 artifacts/
+Utilities.Extensions/ProjectSettings/boot.config
