@@ -30,6 +30,7 @@ TextMesh Pro.meta
 TextMesh Pro/
 UIElementsSchema/
 *packages-lock.json
+boot.config
 
 # ============ #
 # Certificates #
@@ -80,4 +81,3 @@ _ReSharper.Caches
 # ===================== #
 --Version/
 artifacts/
-Utilities.Extensions/ProjectSettings/boot.config
