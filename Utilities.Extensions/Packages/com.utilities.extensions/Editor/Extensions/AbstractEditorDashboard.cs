@@ -3,7 +3,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Utilities.Extensions.Editor
 {
