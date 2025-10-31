@@ -1,11 +1,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
+using Unity.Collections;
+
+#if !UNITY_2022_2_OR_NEWER
+using Unity.Collections.LowLevel.Unsafe;
+#endif
+
 namespace Utilities.Extensions
 {
-    using System;
-    using Unity.Collections;
-    using Unity.Collections.LowLevel.Unsafe;
-
     public static class NativeArrayExtensions
     {
 #if !UNITY_2022_2_OR_NEWER

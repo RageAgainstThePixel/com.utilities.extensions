@@ -46,6 +46,10 @@ openupm add com.utilities.extensions
 - GameObject Extensions
 - Transform Extensions
 - Unity.Object Extensions
+- NativeArray Extensions
+  - AsSpan: Converts a NativeArray to a Span for versions of Unity that do not support `NativeArray.AsSpan()`.
+  - ToBase64String: Converts a NativeArray to a Base64 string with minimal allocations.
+  - FromBase64String: Converts a Base64 string to a NativeArray with minimal allocations.
 
 ### Runtime Utilities
 
