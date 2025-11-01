@@ -48,6 +48,8 @@ openupm add com.utilities.extensions
 - Unity.Object Extensions
 - NativeArray Extensions
   - AsSpan: Converts a NativeArray to a Span for versions of Unity that do not support `NativeArray.AsSpan()`.
+  - MemoryStream.ToNativeArray: Converts a MemoryStream to a NativeArray with minimal allocations.
+  - CopyFrom: Copies data from one NativeArray to another while being able to specify the start index and length of data to copy.
   - ToBase64String: Converts a NativeArray to a Base64 string with minimal allocations.
   - FromBase64String: Converts a Base64 string to a NativeArray with minimal allocations.
 
