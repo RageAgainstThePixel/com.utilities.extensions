@@ -3,10 +3,7 @@
 using System;
 using System.IO;
 using Unity.Collections;
-
-#if !UNITY_2022_2_OR_NEWER
 using Unity.Collections.LowLevel.Unsafe;
-#endif
 
 namespace Utilities.Extensions
 {
