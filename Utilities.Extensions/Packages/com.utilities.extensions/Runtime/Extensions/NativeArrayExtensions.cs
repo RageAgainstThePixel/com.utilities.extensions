@@ -1,11 +1,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.IO;
 using Unity.Collections;
-
-#if !UNITY_2022_2_OR_NEWER
 using Unity.Collections.LowLevel.Unsafe;
-#endif
 
 namespace Utilities.Extensions
 {
@@ -15,6 +13,80 @@ namespace Utilities.Extensions
         public static unsafe ReadOnlySpan<T> AsSpan<T>(this NativeArray<T> nativeArray) where T : unmanaged
             => new(nativeArray.GetUnsafeReadOnlyPtr(), nativeArray.Length);
 #endif
+        public static unsafe NativeArray<byte> ToNativeArray(this MemoryStream stream, int? start = null, long? length = null, Allocator allocator = Allocator.Temp)
+        {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            var startValue = start.GetValueOrDefault(0);
+
+            if (startValue < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(start), "Start must be >= 0.");
+            }
+
+            var lengthValue = length ?? stream.Length - startValue;
+
+            switch (lengthValue)
+            {
+                case < 0:
+                    throw new ArgumentOutOfRangeException(nameof(length), "Length must be >= 0.");
+                case 0:
+                    return new NativeArray<byte>(0, allocator);
+                case > int.MaxValue:
+                    throw new ArgumentOutOfRangeException(nameof(length), "Length exceeds maximum supported size.");
+            }
+
+            if (startValue + lengthValue > stream.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Start + length exceeds the available data in MemoryStream.");
+            }
+
+            if (!stream.TryGetBuffer(out ArraySegment<byte> seg) || seg.Array == null)
+            {
+                throw new InvalidOperationException("MemoryStream internal buffer is not accessible.");
+            }
+
+            var srcOffset = seg.Offset + startValue;
+            var segEnd = seg.Offset + seg.Count;
+
+            if (srcOffset + lengthValue > segEnd)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length), "Requested range extends beyond the accessible buffer segment.");
+            }
+
+            var bytes = (int)lengthValue;
+            var native = new NativeArray<byte>(bytes, allocator);
+            try
+            {
+                fixed (byte* srcPtr = &seg.Array[srcOffset])
+                {
+                    UnsafeUtility.MemCpy(native.GetUnsafePtr(), srcPtr, bytes);
+                }
+
+                return native;
+            }
+            catch
+            {
+                native.Dispose();
+                throw;
+            }
+        }
+
+        public static unsafe NativeArray<T> CopyFrom<T>(this NativeArray<T> dest, NativeArray<T> src, int start, int length) where T : unmanaged
+        {
+            if (start < 0 || length < 0 || start + length > src.Length || length > dest.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(start), "Invalid start or length for copying NativeArray.");
+            }
+
+            var destPtr = (T*)dest.GetUnsafePtr();
+            var srcPtr = (T*)src.GetUnsafeReadOnlyPtr();
+            UnsafeUtility.MemCpy(destPtr, srcPtr + start, length * UnsafeUtility.SizeOf<T>());
+            return dest;
+        }
 
         public static unsafe NativeArray<byte> FromBase64String(string input, Allocator allocator = Allocator.Temp)
         {
