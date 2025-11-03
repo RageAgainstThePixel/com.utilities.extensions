@@ -1,7 +1,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
@@ -59,6 +62,7 @@ namespace Utilities.Extensions
 
             var bytes = (int)lengthValue;
             var native = new NativeArray<byte>(bytes, allocator);
+
             try
             {
                 fixed (byte* srcPtr = &seg.Array[srcOffset])
@@ -366,6 +370,50 @@ namespace Utilities.Extensions
                     62 => '+',
                     _ => '/'
                 };
+            }
+        }
+
+        public static async Task WriteAsync<T>(this T stream, NativeArray<byte> nativeArray, int? offset = null, int? count = null, CancellationToken cancellationToken = default) where T : Stream
+        {
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            var offsetValue = offset.GetValueOrDefault(0);
+
+            if (offsetValue < 0 || offsetValue > nativeArray.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Offset must be between 0 and nativeArray.Length.");
+            }
+
+            var countValue = count ?? (nativeArray.Length - offsetValue);
+
+            if (countValue < 0 || offsetValue + countValue > nativeArray.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), "Invalid count for the provided offset and nativeArray length.");
+            }
+
+            if (countValue == 0) { return; }
+
+            var buffer = ArrayPool<byte>.Shared.Rent(countValue);
+
+            try
+            {
+                unsafe
+                {
+                    fixed (byte* bufferPtr = &buffer[0])
+                    {
+                        var srcPtr = (byte*)nativeArray.GetUnsafeReadOnlyPtr();
+                        UnsafeUtility.MemCpy(bufferPtr, srcPtr + offsetValue, countValue);
+                    }
+                }
+
+                await stream.WriteAsync(buffer, 0, countValue, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
     }
