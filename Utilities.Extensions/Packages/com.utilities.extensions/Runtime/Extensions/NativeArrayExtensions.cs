@@ -396,7 +396,7 @@ namespace Utilities.Extensions
 
             if (countValue == 0) { return; }
 
-            var buffer = ArrayPool<byte>.Shared.Rent(countValue);
+            var buffer = ArrayPool<byte>.Shared.Rent(nativeArray.Length);
 
             try
             {
@@ -404,12 +404,11 @@ namespace Utilities.Extensions
                 {
                     fixed (byte* bufferPtr = &buffer[0])
                     {
-                        var srcPtr = (byte*)nativeArray.GetUnsafeReadOnlyPtr();
-                        UnsafeUtility.MemCpy(bufferPtr, srcPtr + offsetValue, countValue);
+                        UnsafeUtility.MemCpy(bufferPtr, nativeArray.GetUnsafeReadOnlyPtr(), nativeArray.Length);
                     }
                 }
 
-                await stream.WriteAsync(buffer, 0, countValue, cancellationToken).ConfigureAwait(false);
+                await stream.WriteAsync(buffer, offsetValue, countValue, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
