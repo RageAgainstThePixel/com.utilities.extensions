@@ -52,6 +52,7 @@ openupm add com.utilities.extensions
   - CopyFrom: Copies data from one NativeArray to another while being able to specify the start index and length of data to copy.
   - ToBase64String: Converts a NativeArray to a Base64 string with minimal allocations.
   - FromBase64String: Converts a Base64 string to a NativeArray with minimal allocations.
+  - WriteAsync: Writes to a Stream from a NativeArray asynchronously with minimal allocations.
 
 ### Runtime Utilities
 
