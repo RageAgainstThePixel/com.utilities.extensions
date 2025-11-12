@@ -72,5 +72,27 @@ namespace Utilities.Extensions
         /// <remarks>Checks both the managed object and the underling Unity-managed native object.</remarks>
         /// <returns>True if not null, otherwise false.</returns>
         public static bool IsNotNull(this Object @object) => !@object.IsNull();
+
+        /// <summary>
+        /// Tries to find a valid instanced <see cref="Object"/> by instance id.
+        /// </summary>
+        /// <param name="instanceId">The instance id of the object.</param>
+        /// <param name="object">The instanced object, if found.</param>
+        /// <returns>True, if a valid instanced object is found, otherwise false.</returns>
+        public static bool TryFindObjectFromInstanceId<T>(int instanceId, out T @object) where T : Object
+        {
+            var isValid = Resources.InstanceIDIsValid(instanceId);
+
+            if (isValid)
+            {
+                @object = (T)Resources.InstanceIDToObject(instanceId);
+            }
+            else
+            {
+                @object = null;
+            }
+
+            return isValid;
+        }
     }
 }

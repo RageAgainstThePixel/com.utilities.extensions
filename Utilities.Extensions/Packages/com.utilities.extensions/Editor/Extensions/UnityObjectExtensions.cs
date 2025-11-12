@@ -8,7 +8,7 @@ namespace Utilities.Extensions.Editor
     /// <summary>
     /// Extensions for <see cref="Object"/>.
     /// </summary>
-    public static class ObjectExtensions
+    public static class UnityObjectExtensions
     {
         /// <summary>
         /// Get <see cref="Object"/>.<see cref="AssetDatabase"/> guid.
