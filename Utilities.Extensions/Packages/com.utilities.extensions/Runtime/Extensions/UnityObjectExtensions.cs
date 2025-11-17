@@ -1,6 +1,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Utilities.Extensions
 {
@@ -10,7 +12,7 @@ namespace Utilities.Extensions
     public static class UnityObjectExtensions
     {
         /// <summary>
-        /// Enable Unity objects to skip <see cref="Object.DontDestroyOnLoad"/> when editor isn't playing so test runner passes.
+        /// Enable Unity objects to skip <see cref="UnityEngine.Object.DontDestroyOnLoad"/> when editor isn't playing so test runner passes.
         /// </summary>
         /// <param name="object"></param>
         public static void DontDestroyOnLoad(this Object @object)
@@ -81,15 +83,26 @@ namespace Utilities.Extensions
         /// <returns>True, if a valid instanced object is found, otherwise false.</returns>
         public static bool TryFindObjectFromInstanceId<T>(int instanceId, out T @object) where T : Object
         {
-            var isValid = Resources.InstanceIDIsValid(instanceId);
+            @object = null;
+            var isValid = false;
 
-            if (isValid)
+            try
             {
+#if UNITY_6000_0_OR_NEWER
+                isValid = Resources.InstanceIDIsValid(instanceId)
+
+                if (isValid)
+                {
+                    @object = (T)Resources.InstanceIDToObject(instanceId);
+                }
+#else
                 @object = (T)Resources.InstanceIDToObject(instanceId);
+                isValid = @object.IsNotNull();
+#endif
             }
-            else
+            catch (Exception)
             {
-                @object = null;
+                // ignored
             }
 
             return isValid;
