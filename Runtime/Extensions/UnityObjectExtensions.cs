@@ -1,6 +1,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Utilities.Extensions
 {
@@ -10,7 +12,7 @@ namespace Utilities.Extensions
     public static class UnityObjectExtensions
     {
         /// <summary>
-        /// Enable Unity objects to skip <see cref="Object.DontDestroyOnLoad"/> when editor isn't playing so test runner passes.
+        /// Enable Unity objects to skip <see cref="UnityEngine.Object.DontDestroyOnLoad"/> when editor isn't playing so test runner passes.
         /// </summary>
         /// <param name="object"></param>
         public static void DontDestroyOnLoad(this Object @object)
@@ -72,5 +74,38 @@ namespace Utilities.Extensions
         /// <remarks>Checks both the managed object and the underling Unity-managed native object.</remarks>
         /// <returns>True if not null, otherwise false.</returns>
         public static bool IsNotNull(this Object @object) => !@object.IsNull();
+
+        /// <summary>
+        /// Tries to find a valid instanced <see cref="Object"/> by instance id.
+        /// </summary>
+        /// <param name="instanceId">The instance id of the object.</param>
+        /// <param name="object">The instanced object, if found.</param>
+        /// <returns>True, if a valid instanced object is found, otherwise false.</returns>
+        public static bool TryFindObjectFromInstanceId<T>(int instanceId, out T @object) where T : Object
+        {
+            @object = null;
+            var isValid = false;
+
+            try
+            {
+#if UNITY_6000_0_OR_NEWER
+                isValid = Resources.InstanceIDIsValid(instanceId);
+
+                if (isValid)
+                {
+                    @object = (T)Resources.InstanceIDToObject(instanceId);
+                }
+#else
+                @object = (T)Resources.InstanceIDToObject(instanceId);
+                isValid = @object.IsNotNull();
+#endif
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            return isValid;
+        }
     }
 }
