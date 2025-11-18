@@ -89,7 +89,7 @@ namespace Utilities.Extensions
             try
             {
 #if UNITY_6000_0_OR_NEWER
-                isValid = Resources.InstanceIDIsValid(instanceId)
+                isValid = Resources.InstanceIDIsValid(instanceId);
 
                 if (isValid)
                 {
