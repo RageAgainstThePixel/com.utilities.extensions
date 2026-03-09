@@ -49,6 +49,7 @@ namespace Utilities.Extensions.Tests
                 await nativeArray.WriteAllBytesAsync(path);
                 var actual = await File.ReadAllBytesAsync(path);
                 Assert.AreEqual(expected.Length, actual.Length);
+
                 for (var i = 0; i < expected.Length; i++)
                 {
                     Assert.AreEqual(expected[i], actual[i]);
@@ -56,11 +57,6 @@ namespace Utilities.Extensions.Tests
             }
             finally
             {
-                if (nativeArray.IsCreated)
-                {
-                    nativeArray.Dispose();
-                }
-
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -75,9 +71,9 @@ namespace Utilities.Extensions.Tests
             var path = Path.GetTempFileName();
             try
             {
-            try
-            {
-                await nativeArray.WriteAllBytesAsync(path);
+                try
+                {
+                    await nativeArray.WriteAllBytesAsync(path);
                     Assert.Fail("Expected ArgumentException.");
                 }
                 catch (ArgumentException)
@@ -87,11 +83,6 @@ namespace Utilities.Extensions.Tests
             }
             finally
             {
-                if (nativeArray.IsCreated)
-                {
-                    nativeArray.Dispose();
-                }
-
                 if (File.Exists(path))
                 {
                     File.Delete(path);

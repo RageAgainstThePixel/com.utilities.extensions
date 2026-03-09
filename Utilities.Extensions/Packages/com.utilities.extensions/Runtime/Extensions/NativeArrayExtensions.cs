@@ -3,6 +3,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Collections;
@@ -418,7 +419,25 @@ namespace Utilities.Extensions
         }
 
         /// <summary>
-        /// Writes all bytes from this <see cref="NativeArray{T}"/> to the specified file path using the underlying stream-based extension.
+        /// Decodes this <see cref="NativeArray{T}"/> of bytes to a string using the given encoding, without allocating a managed byte array.
+        /// </summary>
+        /// <param name="nativeArray">The UTF-8 or encoded byte data.</param>
+        /// <param name="encoding">Optional. Encoding to use; defaults to <see cref="Encoding.UTF8"/>.</param>
+        /// <returns>Decoded string, or <see cref="string.Empty"/> if the array is not created or has zero length.</returns>
+        public static unsafe string GetString(this NativeArray<byte> nativeArray, Encoding encoding = null)
+        {
+            encoding ??= Encoding.UTF8;
+
+            if (!nativeArray.IsCreated || nativeArray.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            return encoding.GetString((byte*)nativeArray.GetUnsafeReadOnlyPtr(), nativeArray.Length);
+        }
+
+        /// <summary>
+        /// Writes all bytes from this <see cref="NativeArray{T}"/> to the specified file path without allocating a managed byte array.
         /// </summary>
         /// <param name="nativeArray">The source data.</param>
         /// <param name="path">The file path to write to.</param>
