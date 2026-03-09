@@ -435,7 +435,7 @@ namespace Utilities.Extensions
                 throw new ArgumentException("The native array must be created before writing.", nameof(nativeArray));
             }
 
-            if (nativeArray.Length <= 0)
+            if (nativeArray.Length == 0)
             {
                 throw new ArgumentException("Cannot write an empty native array to a file.", nameof(nativeArray));
             }

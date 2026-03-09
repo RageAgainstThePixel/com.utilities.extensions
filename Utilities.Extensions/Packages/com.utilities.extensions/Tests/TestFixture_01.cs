@@ -42,7 +42,7 @@ namespace Utilities.Extensions.Tests
         public async Task Test_02_01_WriteAllBytesAsync_NonEmpty_WritesCorrectContents()
         {
             var expected = Encoding.UTF8.GetBytes("test content");
-            using var nativeArray = new NativeArray<byte>(expected, Allocator.Temp);
+            var nativeArray = new NativeArray<byte>(expected, Allocator.Temp);
             var path = Path.GetTempFileName();
             try
             {
@@ -56,6 +56,11 @@ namespace Utilities.Extensions.Tests
             }
             finally
             {
+                if (nativeArray.IsCreated)
+                {
+                    nativeArray.Dispose();
+                }
+
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -64,18 +69,29 @@ namespace Utilities.Extensions.Tests
         }
 
         [Test]
-        public async Task Test_02_02_WriteAllBytesAsync_EmptyArray_WritesEmptyFile()
+        public async Task Test_02_02_WriteAllBytesAsync_EmptyArray_Throws()
         {
-            using var nativeArray = new NativeArray<byte>(0, Allocator.Temp);
+            var nativeArray = new NativeArray<byte>(0, Allocator.Temp);
             var path = Path.GetTempFileName();
             try
             {
+            try
+            {
                 await nativeArray.WriteAllBytesAsync(path);
-                var actual = await File.ReadAllBytesAsync(path);
-                Assert.AreEqual(0, actual.Length);
+                    Assert.Fail("Expected ArgumentException.");
+                }
+                catch (ArgumentException)
+                {
+                    // expected
+                }
             }
             finally
             {
+                if (nativeArray.IsCreated)
+                {
+                    nativeArray.Dispose();
+                }
+
                 if (File.Exists(path))
                 {
                     File.Delete(path);
