@@ -416,5 +416,26 @@ namespace Utilities.Extensions
                 ArrayPool<byte>.Shared.Return(buffer);
             }
         }
+
+        /// <summary>
+        /// Writes all bytes from this <see cref="NativeArray{T}"/> to the specified file path without allocating a managed byte array.
+        /// </summary>
+        /// <param name="nativeArray">The source data.</param>
+        /// <param name="path">The file path to write to.</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        public static async Task WriteAllBytesAsync(this NativeArray<byte> nativeArray, string path, CancellationToken cancellationToken = default)
+        {
+            if (path is null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            await using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
+
+            if (nativeArray is { IsCreated: true, Length: > 0 })
+            {
+                await fs.WriteAsync(nativeArray, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 }
