@@ -1,9 +1,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using NUnit.Framework;
 using System;
 using System.IO;
 using System.Text;
-using NUnit.Framework;
+using System.Threading.Tasks;
 using Unity.Collections;
 
 namespace Utilities.Extensions.Tests
@@ -38,15 +39,15 @@ namespace Utilities.Extensions.Tests
         }
 
         [Test]
-        public void Test_02_01_WriteAllBytesAsync_NonEmpty_WritesCorrectContents()
+        public async Task Test_02_01_WriteAllBytesAsync_NonEmpty_WritesCorrectContents()
         {
             var expected = Encoding.UTF8.GetBytes("test content");
             using var nativeArray = new NativeArray<byte>(expected, Allocator.Temp);
             var path = Path.GetTempFileName();
             try
             {
-                nativeArray.WriteAllBytesAsync(path).GetAwaiter().GetResult();
-                var actual = File.ReadAllBytes(path);
+                await nativeArray.WriteAllBytesAsync(path);
+                var actual = await File.ReadAllBytesAsync(path);
                 Assert.AreEqual(expected.Length, actual.Length);
                 for (var i = 0; i < expected.Length; i++)
                 {
@@ -63,14 +64,14 @@ namespace Utilities.Extensions.Tests
         }
 
         [Test]
-        public void Test_02_02_WriteAllBytesAsync_EmptyArray_WritesEmptyFile()
+        public async Task Test_02_02_WriteAllBytesAsync_EmptyArray_WritesEmptyFile()
         {
             using var nativeArray = new NativeArray<byte>(0, Allocator.Temp);
             var path = Path.GetTempFileName();
             try
             {
-                nativeArray.WriteAllBytesAsync(path).GetAwaiter().GetResult();
-                var actual = File.ReadAllBytes(path);
+                await nativeArray.WriteAllBytesAsync(path);
+                var actual = await File.ReadAllBytesAsync(path);
                 Assert.AreEqual(0, actual.Length);
             }
             finally
@@ -83,7 +84,7 @@ namespace Utilities.Extensions.Tests
         }
 
         [Test]
-        public void Test_02_03_WriteAllBytesAsync_UncreatedArray_Throws()
+        public async Task Test_02_03_WriteAllBytesAsync_UncreatedArray_Throws()
         {
             var nativeArray = default(NativeArray<byte>);
             var path = Path.GetTempFileName();
@@ -91,7 +92,7 @@ namespace Utilities.Extensions.Tests
             {
                 try
                 {
-                    nativeArray.WriteAllBytesAsync(path).GetAwaiter().GetResult();
+                    await nativeArray.WriteAllBytesAsync(path);
                     Assert.Fail("Expected ArgumentException.");
                 }
                 catch (ArgumentException)
