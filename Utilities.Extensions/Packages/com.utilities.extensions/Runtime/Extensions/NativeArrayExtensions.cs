@@ -435,12 +435,13 @@ namespace Utilities.Extensions
                 throw new ArgumentException("The native array must be created before writing.", nameof(nativeArray));
             }
 
-            await using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
-
-            if (nativeArray.Length > 0)
+            if (nativeArray.Length <= 0)
             {
-                await fs.WriteAsync(nativeArray, cancellationToken: cancellationToken).ConfigureAwait(false);
+                throw new ArgumentException("Cannot write an empty native array to a file.", nameof(nativeArray));
             }
+
+            await using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
+            await fs.WriteAsync(nativeArray, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 }
