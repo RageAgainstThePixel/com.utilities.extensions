@@ -2,7 +2,10 @@
 
 using NUnit.Framework;
 using System;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using Unity.Collections;
 
 namespace Utilities.Extensions.Tests
 {
@@ -33,6 +36,84 @@ namespace Utilities.Extensions.Tests
             using var nativeArray = NativeArrayExtensions.FromBase64String(base64String);
             var convertedBase64String = NativeArrayExtensions.ToBase64String(nativeArray);
             Assert.AreEqual(base64String, convertedBase64String);
+        }
+
+        [Test]
+        public async Task Test_02_01_WriteAllBytesAsync_NonEmpty_WritesCorrectContents()
+        {
+            var expected = Encoding.UTF8.GetBytes("test content");
+            var nativeArray = new NativeArray<byte>(expected, Allocator.Temp);
+            var path = Path.GetTempFileName();
+            try
+            {
+                await nativeArray.WriteAllBytesAsync(path);
+                var actual = await File.ReadAllBytesAsync(path);
+                Assert.AreEqual(expected.Length, actual.Length);
+
+                for (var i = 0; i < expected.Length; i++)
+                {
+                    Assert.AreEqual(expected[i], actual[i]);
+                }
+            }
+            finally
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+        }
+
+        [Test]
+        public async Task Test_02_02_WriteAllBytesAsync_EmptyArray_Throws()
+        {
+            var nativeArray = new NativeArray<byte>(0, Allocator.Temp);
+            var path = Path.GetTempFileName();
+            try
+            {
+                try
+                {
+                    await nativeArray.WriteAllBytesAsync(path);
+                    Assert.Fail("Expected ArgumentException.");
+                }
+                catch (ArgumentException)
+                {
+                    // expected
+                }
+            }
+            finally
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+        }
+
+        [Test]
+        public async Task Test_02_03_WriteAllBytesAsync_UncreatedArray_Throws()
+        {
+            var nativeArray = default(NativeArray<byte>);
+            var path = Path.GetTempFileName();
+            try
+            {
+                try
+                {
+                    await nativeArray.WriteAllBytesAsync(path);
+                    Assert.Fail("Expected ArgumentException.");
+                }
+                catch (ArgumentException)
+                {
+                    // expected
+                }
+            }
+            finally
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
         }
     }
 }
