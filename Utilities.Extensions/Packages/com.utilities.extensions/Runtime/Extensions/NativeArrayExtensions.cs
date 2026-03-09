@@ -418,7 +418,7 @@ namespace Utilities.Extensions
         }
 
         /// <summary>
-        /// Writes all bytes from this <see cref="NativeArray{T}"/> to the specified file path without allocating a managed byte array.
+        /// Writes all bytes from this <see cref="NativeArray{T}"/> to the specified file path using the underlying stream-based extension.
         /// </summary>
         /// <param name="nativeArray">The source data.</param>
         /// <param name="path">The file path to write to.</param>
@@ -430,9 +430,14 @@ namespace Utilities.Extensions
                 throw new ArgumentNullException(nameof(path));
             }
 
+            if (!nativeArray.IsCreated)
+            {
+                throw new ArgumentException("The native array must be created before writing.", nameof(nativeArray));
+            }
+
             await using var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
 
-            if (nativeArray is { IsCreated: true, Length: > 0 })
+            if (nativeArray.Length > 0)
             {
                 await fs.WriteAsync(nativeArray, cancellationToken: cancellationToken).ConfigureAwait(false);
             }

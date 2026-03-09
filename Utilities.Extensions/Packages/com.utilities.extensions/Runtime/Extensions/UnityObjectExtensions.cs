@@ -25,7 +25,7 @@ namespace Utilities.Extensions
         }
 
         /// <summary>
-        /// Destroys a Unity  <see cref="Object"/> appropriately depending if running in in edit or play mode.
+        /// Destroys a Unity <see cref="Object"/> appropriately depending on if running in edit or play mode.
         /// </summary>
         /// <param name="object">Unity  <see cref="Object"/> to destroy</param>
         /// <param name="t">Time in seconds at which to destroy the object, if applicable.</param>
@@ -40,7 +40,7 @@ namespace Utilities.Extensions
             else
             {
 #if UNITY_EDITOR
-                // Must use DestroyImmediate in edit mode but it is not allowed when called from
+                // Must use DestroyImmediate in edit mode, but it is not allowed when called from
                 // trigger/contact, animation event callbacks or OnValidate. Must use Destroy instead.
                 // Delay call to counter this issue in editor.
                 UnityEditor.EditorApplication.delayCall += () =>
@@ -88,7 +88,15 @@ namespace Utilities.Extensions
 
             try
             {
-#if UNITY_6000_0_OR_NEWER
+#if UNITY_6000_3_OR_NEWER
+                var entityId = (EntityId)instanceId;
+                isValid = Resources.EntityIdIsValid(entityId);
+
+                if (isValid)
+                {
+                    @object = (T)Resources.EntityIdToObject(entityId);
+                }
+#elif UNITY_6000_0_OR_NEWER
                 isValid = Resources.InstanceIDIsValid(instanceId);
 
                 if (isValid)
