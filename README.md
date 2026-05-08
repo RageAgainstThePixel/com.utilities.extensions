@@ -88,6 +88,23 @@ openupm add com.utilities.extensions
   - Context actions to upgrade/downgrade component types while copying serialized values.
 - `IconEditor`
   - Batch script icon assignment for selected folders/assets.
+- `ProcessResult`
+  - Structured process execution result used by `ProcessExtensions`.
+
+### Editor Drawers and Inspectors
+
+- `SerializedDictionaryPropertyDrawer`
+  - Reorderable inspector drawer for `SerializedDictionary<TKey, TValue>`.
+- `SerializedDictionaryObject`
+  - Helper wrapper used to manage serialized dictionary key/value arrays.
+- `SceneReferencePropertyDrawer`
+  - Inspector scene picker drawer for `SceneReferenceAttribute`.
+- `ReadonlyPropertyDrawer`
+  - Inspector drawer for `ReadonlyLabelAttribute`.
+- `RenderScriptableObjectPropertyDrawer`
+  - Inspector drawer for inline scriptable object rendering.
+- `LoadSceneButtonEditor` (`UNITY_UGUI`)
+  - Custom inspector for `LoadSceneButton`.
 
 ### Attributes
 
