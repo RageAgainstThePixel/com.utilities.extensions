@@ -80,6 +80,20 @@ namespace Utilities.Extensions.Editor
         }
 
         public static string GetUniqueIdentifier(this SerializedProperty property)
-            => $"{property.serializedObject.targetObject.GetInstanceID()}/{property.propertyPath}";
+        {
+            var targetObject = property?.serializedObject?.targetObject;
+            var objectId = "null";
+
+            if (targetObject != null)
+            {
+#if UNITY_6000_4_OR_NEWER
+                objectId = targetObject.GetEntityId().ToString();
+#else
+                objectId = targetObject.GetInstanceID().ToString();
+#endif
+            }
+
+            return $"{objectId}/{property?.propertyPath}";
+        }
     }
 }
