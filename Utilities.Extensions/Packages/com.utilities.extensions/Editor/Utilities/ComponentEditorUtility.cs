@@ -8,6 +8,9 @@ using Object = UnityEngine.Object;
 
 namespace Utilities.Extensions.Editor
 {
+    /// <summary>
+    /// Provides component context-menu actions for upgrading or downgrading component types while preserving serialized data.
+    /// </summary>
     public static class ComponentEditorUtility
     {
         private class ComponentUpgradePopup : EditorWindow

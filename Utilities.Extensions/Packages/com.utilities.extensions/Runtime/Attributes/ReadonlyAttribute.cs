@@ -11,6 +11,9 @@ namespace Utilities.Extensions
     [AttributeUsage(AttributeTargets.Field)]
     public class ReadonlyLabelAttribute : PropertyAttribute
     {
+        /// <summary>
+        /// Gets a value indicating whether the inspector label can be copied to the clipboard.
+        /// </summary>
         public readonly bool CanCopyLabel;
 
         /// <summary>

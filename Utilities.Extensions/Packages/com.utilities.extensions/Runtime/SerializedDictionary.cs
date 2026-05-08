@@ -6,6 +6,11 @@ using UnityEngine;
 
 namespace Utilities.Extensions
 {
+    /// <summary>
+    /// Serializable dictionary base type that persists key/value data through Unity serialization callbacks.
+    /// </summary>
+    /// <typeparam name="TKey">Dictionary key type.</typeparam>
+    /// <typeparam name="TValue">Dictionary value type.</typeparam>
     [Serializable]
     public abstract class SerializedDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
     {

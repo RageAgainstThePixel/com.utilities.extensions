@@ -6,6 +6,9 @@ using UnityEditor.UI;
 
 namespace Utilities.Extensions.Editor
 {
+    /// <summary>
+    /// Custom inspector for <see cref="LoadSceneButton"/> that exposes scene settings alongside base button fields.
+    /// </summary>
     [CustomEditor(typeof(LoadSceneButton))]
     public class LoadSceneButtonEditor : ButtonEditor
     {
@@ -19,6 +22,9 @@ namespace Utilities.Extensions.Editor
             loadSceneMode = serializedObject.FindProperty(nameof(loadSceneMode));
         }
 
+        /// <summary>
+        /// Draws the default button inspector plus scene configuration fields.
+        /// </summary>
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();

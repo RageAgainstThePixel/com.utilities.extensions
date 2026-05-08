@@ -7,11 +7,20 @@ using UnityEngine;
 
 namespace Utilities.Extensions.Editor
 {
+    /// <summary>
+    /// Property drawer that renders <see cref="SerializedDictionary{TKey,TValue}"/> instances with a reorderable list UI.
+    /// </summary>
     [CustomPropertyDrawer(typeof(SerializedDictionary<,>), true)]
     public class SerializedDictionaryPropertyDrawer : PropertyDrawer
     {
         private static readonly Dictionary<string, ReorderableList> reorderableListCache = new Dictionary<string, ReorderableList>();
 
+        /// <summary>
+        /// Draws the serialized dictionary field in the inspector.
+        /// </summary>
+        /// <param name="position">The rectangle on screen to use for drawing.</param>
+        /// <param name="property">The serialized dictionary property to render.</param>
+        /// <param name="label">The field label.</param>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             label = EditorGUI.BeginProperty(position, label, property);
@@ -187,6 +196,12 @@ namespace Utilities.Extensions.Editor
 
         #endregion List Callbacks
 
+        /// <summary>
+        /// Returns the total height required to draw the serialized dictionary property.
+        /// </summary>
+        /// <param name="property">The serialized dictionary property.</param>
+        /// <param name="label">The field label.</param>
+        /// <returns>The required height in pixels.</returns>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
             => reorderableListCache.TryGetValue(property.GetUniqueIdentifier(), out var list)
                 ? list.GetHeight()
