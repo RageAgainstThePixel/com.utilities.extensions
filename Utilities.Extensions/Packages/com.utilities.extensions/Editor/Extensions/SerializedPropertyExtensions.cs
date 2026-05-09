@@ -92,7 +92,7 @@ namespace Utilities.Extensions.Editor
         }
 
         /// <summary>
-        /// Builds a stable identifier using the target object id and property path.
+        /// Builds a stable identifier for the property using an editor-safe object key and the property path.
         /// </summary>
         /// <param name="property">The serialized property to identify.</param>
         /// <returns>A string identifier that is stable for a given target object and property path.</returns>
@@ -103,8 +103,12 @@ namespace Utilities.Extensions.Editor
 
             if (targetObject != null)
             {
+                // Unity 6.4+ deprecates Object.GetInstanceID() (warn-as-error in CI). Prefer GetEntityId when available.
+                // For Unity 6.0–6.3 (and any 6.x where the 6.4 define is unavailable), use GlobalObjectId — never InstanceID here.
 #if UNITY_6000_4_OR_NEWER
                 objectId = targetObject.GetEntityId().ToString();
+#elif UNITY_6000_0_OR_NEWER
+                objectId = GlobalObjectId.GetGlobalObjectIdSlow(targetObject).ToString();
 #else
                 objectId = targetObject.GetInstanceID().ToString();
 #endif
