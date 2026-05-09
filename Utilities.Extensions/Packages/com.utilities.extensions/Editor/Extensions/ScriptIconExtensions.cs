@@ -7,6 +7,9 @@ using Object = UnityEngine.Object;
 
 namespace Utilities.Extensions.Editor
 {
+    /// <summary>
+    /// Inspector extension that batch-assigns script icons for assets under a selected folder.
+    /// </summary>
     [CanEditMultipleObjects]
     [CustomEditor(typeof(DefaultAsset))]
     public class IconEditor : UnityEditor.Editor
@@ -17,6 +20,9 @@ namespace Utilities.Extensions.Editor
         private bool filterFlag;
         private bool overwriteIcons;
 
+        /// <summary>
+        /// Draws controls for selecting an icon and applying it to matching child script assets.
+        /// </summary>
         public override void OnInspectorGUI()
         {
             EditorGUILayout.BeginHorizontal();

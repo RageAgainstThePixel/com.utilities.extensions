@@ -10,6 +10,9 @@ namespace Utilities.Extensions.Editor
     /// </summary>
     public class ProcessResult
     {
+        /// <summary>
+        /// Command-line arguments used to run the process.
+        /// </summary>
         public string Arguments { get; }
 
         /// <summary>

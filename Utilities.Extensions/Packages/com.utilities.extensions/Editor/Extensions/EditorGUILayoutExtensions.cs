@@ -7,6 +7,9 @@ using UnityEngine;
 
 namespace Utilities.Extensions.Editor
 {
+    /// <summary>
+    /// Helper methods for common custom inspector layout and drawing operations.
+    /// </summary>
     public static class EditorGUILayoutExtensions
     {
         /// <summary>
@@ -46,8 +49,8 @@ namespace Utilities.Extensions.Editor
         /// <summary>
         /// Draws a text area.
         /// </summary>
-        /// <param name="rect"></param>
-        /// <param name="property"></param>
+        /// <param name="rect">The rectangle where the text area is drawn.</param>
+        /// <param name="property">The serialized string property to edit.</param>
         public static void DrawTextArea(Rect rect, SerializedProperty property)
         {
             if (property.propertyType == SerializedPropertyType.String)

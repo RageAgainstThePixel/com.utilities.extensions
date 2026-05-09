@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 namespace Utilities.Extensions
 {
+    /// <summary>
+    /// UI button that loads a configured scene when clicked.
+    /// </summary>
     public class LoadSceneButton : Button
     {
         [SerializeField]

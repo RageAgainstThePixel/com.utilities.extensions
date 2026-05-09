@@ -17,6 +17,12 @@ namespace Utilities.Extensions.Editor
     [CustomPropertyDrawer(typeof(RenderScriptableObjectAttribute))]
     public class RenderScriptableObjectPropertyDrawer : PropertyDrawer
     {
+        /// <summary>
+        /// Returns the height required to draw the object field and any expanded nested properties.
+        /// </summary>
+        /// <param name="property">The serialized property being drawn.</param>
+        /// <param name="label">The field label.</param>
+        /// <returns>The height in pixels required by this drawer.</returns>
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             var totalHeight = EditorGUIUtility.singleLineHeight;
@@ -61,6 +67,12 @@ namespace Utilities.Extensions.Editor
 
         private static readonly List<string> ignoreClassFullNames = new() { "TMPro.TMP_FontAsset" };
 
+        /// <summary>
+        /// Draws the scriptable object reference field and optional inline nested inspector.
+        /// </summary>
+        /// <param name="position">The drawing rectangle.</param>
+        /// <param name="property">The serialized property to render.</param>
+        /// <param name="label">The field label.</param>
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
@@ -178,11 +190,11 @@ namespace Utilities.Extensions.Editor
         /// <summary>
         /// Allows calling this drawer from GUILayout rather than as a property drawer, which can be useful for custom inspectors
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="label"></param>
-        /// <param name="objectReferenceValue"></param>
-        /// <param name="isExpanded"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The scriptable object type shown by the field.</typeparam>
+        /// <param name="label">The field label.</param>
+        /// <param name="objectReferenceValue">The current object reference value.</param>
+        /// <param name="isExpanded">Whether nested fields should be expanded and rendered.</param>
+        /// <returns>The resulting object reference value after drawing.</returns>
         public static T DrawScriptableObjectField<T>(GUIContent label, T objectReferenceValue, ref bool isExpanded) where T : ScriptableObject
         {
             var position = EditorGUILayout.BeginVertical();

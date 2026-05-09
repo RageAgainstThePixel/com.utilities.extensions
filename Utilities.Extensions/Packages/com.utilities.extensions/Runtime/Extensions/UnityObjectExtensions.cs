@@ -81,6 +81,9 @@ namespace Utilities.Extensions
         /// <param name="instanceId">The instance id of the object.</param>
         /// <param name="object">The instanced object, if found.</param>
         /// <returns>True, if a valid instanced object is found, otherwise false.</returns>
+#if UNITY_6000_4_OR_NEWER
+        [Obsolete("Use TryFindObjectFromEntityId(EntityId, out T) on Unity 6.4+.", false)]
+#endif
         public static bool TryFindObjectFromInstanceId<T>(int instanceId, out T @object) where T : Object
         {
             @object = null;
@@ -88,7 +91,15 @@ namespace Utilities.Extensions
 
             try
             {
-#if UNITY_6000_3_OR_NEWER
+#if UNITY_6000_4_OR_NEWER
+                var entityId = EntityId.FromULong(unchecked((ulong)(uint)instanceId));
+                isValid = entityId.IsValid();
+
+                if (isValid)
+                {
+                    @object = (T)Resources.EntityIdToObject(entityId);
+                }
+#elif UNITY_6000_3_OR_NEWER
                 var entityId = (EntityId)instanceId;
                 isValid = Resources.EntityIdIsValid(entityId);
 
@@ -115,5 +126,31 @@ namespace Utilities.Extensions
 
             return isValid;
         }
+
+#if UNITY_6000_4_OR_NEWER
+        /// <summary>
+        /// Tries to find a valid instanced <see cref="Object"/> by entity id.
+        /// </summary>
+        /// <param name="entityId">The entity id of the object.</param>
+        /// <param name="object">The instanced object, if found.</param>
+        /// <returns>True, if a valid instanced object is found, otherwise false.</returns>
+        public static bool TryFindObjectFromEntityId<T>(EntityId entityId, out T @object) where T : Object
+        {
+            @object = null;
+
+            try
+            {
+                if (!entityId.IsValid()) { return false; }
+                @object = (T)Resources.EntityIdToObject(entityId);
+                return @object.IsNotNull();
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            return false;
+        }
+#endif
     }
 }
