@@ -6,6 +6,9 @@ using UnityEngine;
 
 namespace Utilities.Extensions.Editor
 {
+    /// <summary>
+    /// Base editor window for tabbed dashboard-style tools with shared save-directory controls and layout helpers.
+    /// </summary>
     public abstract class AbstractEditorDashboard : EditorWindow
     {
         #region Constants

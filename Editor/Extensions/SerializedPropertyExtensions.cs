@@ -5,12 +5,15 @@ using UnityEngine;
 
 namespace Utilities.Extensions.Editor
 {
+    /// <summary>
+    /// Extension methods for inspecting and mutating <see cref="SerializedProperty"/> values.
+    /// </summary>
     public static class SerializedPropertyExtensions
     {
         /// <summary>
         /// Checks if the underlying <see cref="Object"/> reference is null or missing.
         /// </summary>
-        /// <param name="property"></param>
+        /// <param name="property">The serialized property to inspect.</param>
         /// <returns>True, if <see cref="Object"/> reference is null or missing.</returns>
         public static bool IsMissingObjectReference(this SerializedProperty property)
         {
@@ -23,6 +26,11 @@ namespace Utilities.Extensions.Editor
             };
         }
 
+        /// <summary>
+        /// Determines whether the property currently contains its default value for supported property types.
+        /// </summary>
+        /// <param name="property">The serialized property to inspect.</param>
+        /// <returns><see langword="true"/> if the property has its default value; otherwise <see langword="false"/>.</returns>
         public static bool IsDefaultValue(this SerializedProperty property)
         {
             if (property == null) { return false; }
@@ -42,6 +50,10 @@ namespace Utilities.Extensions.Editor
             };
         }
 
+        /// <summary>
+        /// Sets the property value to its default for supported property types.
+        /// </summary>
+        /// <param name="property">The serialized property to mutate.</param>
         public static void SetDefaultValue(this SerializedProperty property)
         {
             switch (property.propertyType)
@@ -79,7 +91,30 @@ namespace Utilities.Extensions.Editor
             }
         }
 
+        /// <summary>
+        /// Builds a stable identifier for the property using an editor-safe object key and the property path.
+        /// </summary>
+        /// <param name="property">The serialized property to identify.</param>
+        /// <returns>A string identifier that is stable for a given target object and property path.</returns>
         public static string GetUniqueIdentifier(this SerializedProperty property)
-            => $"{property.serializedObject.targetObject.GetInstanceID()}/{property.propertyPath}";
+        {
+            var targetObject = property?.serializedObject?.targetObject;
+            var objectId = "null";
+
+            if (targetObject != null)
+            {
+                // Unity 6.4+ deprecates Object.GetInstanceID() (warn-as-error in CI). Prefer GetEntityId when available.
+                // For Unity 6.0–6.3 (and any 6.x where the 6.4 define is unavailable), use GlobalObjectId — never InstanceID here.
+#if UNITY_6000_4_OR_NEWER
+                objectId = targetObject.GetEntityId().ToString();
+#elif UNITY_6000_0_OR_NEWER
+                objectId = GlobalObjectId.GetGlobalObjectIdSlow(targetObject).ToString();
+#else
+                objectId = targetObject.GetInstanceID().ToString();
+#endif
+            }
+
+            return $"{objectId}/{property?.propertyPath}";
+        }
     }
 }

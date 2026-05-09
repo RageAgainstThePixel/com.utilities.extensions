@@ -11,12 +11,29 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace Utilities.Extensions
 {
+    /// <summary>
+    /// Extension methods for working with <see cref="NativeArray{T}"/> and stream/base64 interop.
+    /// </summary>
     public static class NativeArrayExtensions
     {
 #if !UNITY_2022_2_OR_NEWER
+        /// <summary>
+        /// Creates a read-only span over the contents of a native array on Unity versions that do not expose <c>NativeArray.AsSpan()</c>.
+        /// </summary>
+        /// <typeparam name="T">The element type stored in the native array.</typeparam>
+        /// <param name="nativeArray">The source native array.</param>
+        /// <returns>A read-only span over the native array memory.</returns>
         public static unsafe ReadOnlySpan<T> AsSpan<T>(this NativeArray<T> nativeArray) where T : unmanaged
             => new(nativeArray.GetUnsafeReadOnlyPtr(), nativeArray.Length);
 #endif
+        /// <summary>
+        /// Copies a range of bytes from a <see cref="MemoryStream"/> into a new <see cref="NativeArray{T}"/>.
+        /// </summary>
+        /// <param name="stream">The source memory stream.</param>
+        /// <param name="start">Optional start offset in the stream buffer. Defaults to <c>0</c>.</param>
+        /// <param name="length">Optional number of bytes to copy. Defaults to the remaining stream length.</param>
+        /// <param name="allocator">The allocator used to create the native array.</param>
+        /// <returns>A new native array containing the copied bytes.</returns>
         public static unsafe NativeArray<byte> ToNativeArray(this MemoryStream stream, int? start = null, long? length = null, Allocator allocator = Allocator.Temp)
         {
             if (stream is null)
@@ -80,6 +97,15 @@ namespace Utilities.Extensions
             }
         }
 
+        /// <summary>
+        /// Copies a contiguous range from a source native array into the destination native array.
+        /// </summary>
+        /// <typeparam name="T">The unmanaged element type.</typeparam>
+        /// <param name="dest">The destination native array.</param>
+        /// <param name="src">The source native array.</param>
+        /// <param name="start">The zero-based start index in <paramref name="src"/>.</param>
+        /// <param name="length">The number of elements to copy.</param>
+        /// <returns>The destination native array.</returns>
         public static unsafe NativeArray<T> CopyFrom<T>(this NativeArray<T> dest, NativeArray<T> src, int start, int length) where T : unmanaged
         {
             if (start < 0 || length < 0 || start + length > src.Length || length > dest.Length)
@@ -93,6 +119,12 @@ namespace Utilities.Extensions
             return dest;
         }
 
+        /// <summary>
+        /// Decodes a Base64 string into a new byte native array.
+        /// </summary>
+        /// <param name="input">The Base64-encoded string.</param>
+        /// <param name="allocator">The allocator used to create the native array.</param>
+        /// <returns>A native array containing the decoded bytes.</returns>
         public static unsafe NativeArray<byte> FromBase64String(string input, Allocator allocator = Allocator.Temp)
         {
             if (input is null)
@@ -321,6 +353,11 @@ namespace Utilities.Extensions
             return map;
         }
 
+        /// <summary>
+        /// Encodes a byte native array to a Base64 string.
+        /// </summary>
+        /// <param name="nativeArray">The source byte native array.</param>
+        /// <returns>The Base64 string representation of the source bytes.</returns>
         public static string ToBase64String(NativeArray<byte> nativeArray)
         {
             if (nativeArray.Length == 0)
@@ -374,6 +411,16 @@ namespace Utilities.Extensions
             }
         }
 
+        /// <summary>
+        /// Writes bytes from a native array to a stream asynchronously.
+        /// </summary>
+        /// <typeparam name="T">The concrete stream type.</typeparam>
+        /// <param name="stream">The destination stream.</param>
+        /// <param name="nativeArray">The source native byte array.</param>
+        /// <param name="offset">Optional start offset in <paramref name="nativeArray"/>.</param>
+        /// <param name="count">Optional byte count to write.</param>
+        /// <param name="cancellationToken">An optional cancellation token.</param>
+        /// <returns>A task that completes when the write operation finishes.</returns>
         public static async Task WriteAsync<T>(this T stream, NativeArray<byte> nativeArray, int? offset = null, int? count = null, CancellationToken cancellationToken = default) where T : Stream
         {
             if (stream is null)
@@ -442,6 +489,7 @@ namespace Utilities.Extensions
         /// <param name="nativeArray">The source data.</param>
         /// <param name="path">The file path to write to.</param>
         /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>A task that completes when the file write has finished.</returns>
         public static async Task WriteAllBytesAsync(this NativeArray<byte> nativeArray, string path, CancellationToken cancellationToken = default)
         {
             if (path is null)
