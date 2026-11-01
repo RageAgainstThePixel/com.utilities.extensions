@@ -8,6 +8,8 @@ Common extensions and editor utilities for [Unity](https://unity.com/) projects.
 
 Requires Unity `2021.3` LTS or newer.
 
+Pull requests test the current Unity streams, and a monthly run covers the older lines.
+
 The recommended installation method is via Unity Package Manager with [OpenUPM](https://openupm.com/packages/com.utilities.extensions).
 
 ### Via Unity Package Manager and OpenUPM
